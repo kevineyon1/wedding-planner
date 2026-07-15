@@ -92,6 +92,11 @@ export default async function VendorPage() {
                               📞 {v.kontak}
                             </p>
                           )}
+                          {v.pax != null && (
+                            <p className="text-xs text-muted mt-0.5">
+                              👥 Pax: {v.pax}
+                            </p>
+                          )}
                           {v.deskripsiPaket && (
                             <p className="text-sm text-foreground/80 mt-1">
                               {v.deskripsiPaket}
@@ -102,16 +107,28 @@ export default async function VendorPage() {
                               {v.catatan}
                             </p>
                           )}
-                          {v.link && (
-                            <a
-                              href={v.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline mt-1 inline-block"
-                            >
-                              🔗 Lihat portofolio
-                            </a>
-                          )}
+                          <div className="flex items-center gap-3 mt-1">
+                            {v.link && (
+                              <a
+                                href={v.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline"
+                              >
+                                🔗 Lihat portofolio
+                              </a>
+                            )}
+                            {v.brosurPath && (
+                              <a
+                                href={`/api/vendor-brosur/${v.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline"
+                              >
+                                📄 {v.brosurNama ?? "Lihat brosur"}
+                              </a>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-semibold">

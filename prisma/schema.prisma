@@ -17,10 +17,13 @@ model Vendor {
   kategori       String // Venue, Katering, Dekorasi, Dokumentasi, MUA, Busana, dll
   kontak         String? // WA / IG / telepon
   hargaPenawaran Int       @default(0) // dalam Rupiah
+  pax            Int? // kapasitas tamu, relevan utk kategori Venue
   deskripsiPaket String?
   status         String    @default("wishlist") // wishlist | shortlist | dipilih | booked
   link           String?
   catatan        String?
+  brosurPath     String? // nama file di disk (folder uploads/, di luar public/)
+  brosurNama     String? // nama asli file saat diupload, utk ditampilkan
   payments       Payment[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

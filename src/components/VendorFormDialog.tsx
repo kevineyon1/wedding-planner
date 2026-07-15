@@ -10,10 +10,13 @@ type Vendor = {
   kategori: string;
   kontak: string | null;
   hargaPenawaran: number;
+  pax: number | null;
   deskripsiPaket: string | null;
   status: string;
   link: string | null;
   catatan: string | null;
+  brosurPath: string | null;
+  brosurNama: string | null;
 };
 
 export function VendorFormDialog({
@@ -24,7 +27,10 @@ export function VendorFormDialog({
   trigger?: "primary" | "ghost";
 }) {
   const [open, setOpen] = useState(false);
+  const [kategori, setKategori] = useState(vendor?.kategori ?? "");
+  const [hapusBrosur, setHapusBrosur] = useState(false);
   const isEdit = Boolean(vendor);
+  const isVenue = kategori === "Venue";
 
   return (
     <>
@@ -83,7 +89,8 @@ export function VendorFormDialog({
                   <select
                     name="kategori"
                     required
-                    defaultValue={vendor?.kategori ?? ""}
+                    value={kategori}
+                    onChange={(e) => setKategori(e.target.value)}
                     className="input"
                   >
                     <option value="" disabled>
@@ -125,6 +132,19 @@ export function VendorFormDialog({
                 </div>
               </div>
 
+              {isVenue && (
+                <div>
+                  <label className="label">Pax (kapasitas tamu)</label>
+                  <input
+                    name="pax"
+                    inputMode="numeric"
+                    defaultValue={vendor?.pax ?? ""}
+                    className="input"
+                    placeholder="mis. 300"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="label">Kontak (WA / IG / telp)</label>
                 <input
@@ -153,6 +173,45 @@ export function VendorFormDialog({
                   className="input"
                   placeholder="https://..."
                 />
+              </div>
+
+              <div>
+                <label className="label">Brosur (PDF)</label>
+                {isEdit && vendor?.brosurPath && !hapusBrosur ? (
+                  <div className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm mb-2">
+                    <a
+                      href={`/api/vendor-brosur/${vendor.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline truncate"
+                    >
+                      📄 {vendor.brosurNama ?? "Lihat brosur"}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setHapusBrosur(true)}
+                      className="text-xs text-red-600 hover:underline shrink-0"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                ) : null}
+                {isEdit && (
+                  <input
+                    type="hidden"
+                    name="hapusBrosur"
+                    value={hapusBrosur ? "on" : ""}
+                  />
+                )}
+                <input
+                  type="file"
+                  name="brosur"
+                  accept="application/pdf"
+                  className="input file:mr-3 file:rounded-md file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:text-primary file:text-sm"
+                />
+                <p className="text-xs text-muted mt-1">
+                  Upload brosur/penawaran vendor dalam format PDF (opsional).
+                </p>
               </div>
 
               <div>
