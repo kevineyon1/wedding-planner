@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { KATEGORI_TAMU } from "@/lib/constants";
-import { createGuest, setGuestStatus, deleteGuest } from "@/app/actions/guest";
+import { setGuestStatus, deleteGuest } from "@/app/actions/guest";
 import { StatusSelect } from "@/components/StatusSelect";
 import { DeleteButton } from "@/components/DeleteButton";
+import { GuestForm } from "@/components/GuestForm";
 
 const STATUS_TAMU = [
   { value: "rencana", label: "Rencana" },
@@ -94,45 +94,7 @@ export default async function TamuPage({
       </div>
 
       {/* Form tambah */}
-      <form
-        action={createGuest}
-        className="card p-4 mb-6 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end"
-      >
-        <div>
-          <label className="label">Nama tamu / keluarga</label>
-          <input name="nama" required className="input" placeholder="mis. Keluarga Budi" />
-        </div>
-        <div>
-          <label className="label">Kategori</label>
-          <select name="kategori" className="input" defaultValue="Teman">
-            {KATEGORI_TAMU.map((k) => (
-              <option key={k} value={k}>
-                {k}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Sisi</label>
-          <select name="sisi" className="input" defaultValue="pria">
-            <option value="pria">Pria</option>
-            <option value="wanita">Wanita</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">Jml orang</label>
-          <input
-            name="jumlahOrang"
-            type="number"
-            min={1}
-            defaultValue={1}
-            className="input w-24"
-          />
-        </div>
-        <button type="submit" className="btn-primary">
-          Tambah
-        </button>
-      </form>
+      <GuestForm />
 
       {/* List */}
       {guests.length === 0 ? (
