@@ -1,65 +1,136 @@
-import Image from "next/image";
+import Link from "next/link";
+import {
+  getSetting,
+  getBudgetSummary,
+  getTodoSummary,
+  getGuestSummary,
+  getPaymentSummary,
+} from "@/lib/queries";
+import { formatRupiah, formatTanggal, hariMenuju } from "@/lib/format";
 
-export default function Home() {
+export default async function DashboardPage() {
+  const [setting, budget, todo, guest, payment] = await Promise.all([
+    getSetting(),
+    getBudgetSummary(),
+    getTodoSummary(),
+    getGuestSummary(),
+    getPaymentSummary(),
+  ]);
+
+  const sisaHari = hariMenuju(setting.tanggalHariH);
+  const namaPasangan =
+    setting.namaPengantin1 && setting.namaPengantin2
+      ? `${setting.namaPengantin1} & ${setting.namaPengantin2}`
+      : "Pernikahan Kita";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      <header className="mb-6">
+        <h1 className="text-2xl font-semibold">{namaPasangan}</h1>
+        <p className="text-sm text-muted">
+          {setting.tanggalHariH
+            ? formatTanggal(setting.tanggalHariH)
+            : "Atur tanggal di Pengaturan"}
+        </p>
+      </header>
+
+      {/* Countdown */}
+      <div className="card p-6 mb-6 text-center bg-primary-soft/60 border-primary/20">
+        {sisaHari === null ? (
+          <p className="text-muted">
+            Belum ada tanggal hari-H.{" "}
+            <Link href="/pengaturan" className="text-primary underline">
+              Atur sekarang
+            </Link>
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        ) : sisaHari >= 0 ? (
+          <>
+            <p className="text-5xl font-bold text-primary">{sisaHari}</p>
+            <p className="text-sm text-muted mt-1">hari menuju hari bahagia 💍</p>
+          </>
+        ) : (
+          <p className="text-lg font-medium text-primary">
+            Selamat menempuh hidup baru! 🎉
+          </p>
+        )}
+      </div>
+
+      {/* Ringkasan */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Budget */}
+        <Link href="/budget" className="card p-5 hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold">💰 Budget</h2>
+            <span className="text-xs text-muted">lihat →</span>
+          </div>
+          <p className="text-2xl font-semibold text-primary">
+            {formatRupiah(budget.totalBiaya)}
+          </p>
+          <p className="text-xs text-muted">
+            dari anggaran {formatRupiah(budget.totalAnggaran)}
+          </p>
+          <div className="h-2 rounded-full bg-primary-soft overflow-hidden mt-3">
+            <div
+              className={`h-full ${budget.isOverBudget ? "bg-red-500" : "bg-primary"}`}
+              style={{ width: `${Math.min(100, budget.persenTerpakai)}%` }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <p
+            className={`text-xs mt-2 ${
+              budget.isOverBudget ? "text-red-600" : "text-emerald-600"
+            }`}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            Sisa: {formatRupiah(budget.sisa)}
+          </p>
+        </Link>
+
+        {/* To-Do */}
+        <Link href="/todo" className="card p-5 hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold">✅ To-Do</h2>
+            <span className="text-xs text-muted">lihat →</span>
+          </div>
+          <p className="text-2xl font-semibold">
+            {todo.selesai}
+            <span className="text-base text-muted">/{todo.total}</span>
+          </p>
+          <p className="text-xs text-muted">tugas selesai</p>
+          <div className="h-2 rounded-full bg-primary-soft overflow-hidden mt-3">
+            <div
+              className="h-full bg-emerald-500"
+              style={{ width: `${todo.persen}%` }}
+            />
+          </div>
+          <p className="text-xs mt-2 text-muted">{todo.persen}% progres</p>
+        </Link>
+
+        {/* Vendor / Pembayaran */}
+        <Link href="/vendor" className="card p-5 hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold">🏷️ Vendor</h2>
+            <span className="text-xs text-muted">lihat →</span>
+          </div>
+          <p className="text-sm text-muted">Sudah dibayar</p>
+          <p className="text-xl font-semibold text-emerald-600">
+            {formatRupiah(payment.totalDibayar)}
+          </p>
+          <p className="text-xs text-amber-600 mt-1">
+            Sisa pelunasan: {formatRupiah(payment.sisaBayar)}
+          </p>
+        </Link>
+
+        {/* Tamu */}
+        <Link href="/tamu" className="card p-5 hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold">💌 Tamu</h2>
+            <span className="text-xs text-muted">lihat →</span>
+          </div>
+          <p className="text-2xl font-semibold">{guest.totalOrang}</p>
+          <p className="text-xs text-muted">
+            estimasi orang • {guest.totalUndangan} undangan
+          </p>
+        </Link>
+      </div>
     </div>
   );
 }

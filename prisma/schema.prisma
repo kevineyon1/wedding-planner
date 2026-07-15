@@ -1,0 +1,83 @@
+// Kevin Wedding Planner — Prisma schema
+// Data master disimpan di DB; angka turunan (total, sisa) dihitung on-the-fly.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Vendor / kandidat vendor per kategori
+model Vendor {
+  id             Int       @id @default(autoincrement())
+  nama           String
+  kategori       String // Venue, Katering, Dekorasi, Dokumentasi, MUA, Busana, dll
+  kontak         String? // WA / IG / telepon
+  hargaPenawaran Int       @default(0) // dalam Rupiah
+  deskripsiPaket String?
+  status         String    @default("wishlist") // wishlist | shortlist | dipilih | booked
+  link           String?
+  catatan        String?
+  payments       Payment[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+/// Pembayaran ke vendor (DP / pelunasan)
+model Payment {
+  id              Int       @id @default(autoincrement())
+  vendorId        Int
+  vendor          Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  jumlah          Int       @default(0) // nominal pembayaran
+  jenis           String    @default("dp") // dp | pelunasan | lainnya
+  tanggalBayar    DateTime?
+  tanggalJatuhTempo DateTime?
+  status          String    @default("belum") // belum | lunas
+  catatan         String?
+  createdAt       DateTime  @default(now())
+}
+
+/// Tugas persiapan (checklist)
+model Todo {
+  id        Int       @id @default(autoincrement())
+  judul     String
+  kategori  String    @default("Umum")
+  status    String    @default("belum") // belum | proses | selesai
+  prioritas String    @default("normal") // rendah | normal | tinggi
+  deadline  DateTime?
+  catatan   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+/// Daftar tamu
+model Guest {
+  id          Int      @id @default(autoincrement())
+  nama        String
+  kategori    String   @default("Teman") // Keluarga | Teman | Kolega | dll
+  sisi        String   @default("pria") // pria | wanita
+  jumlahOrang Int      @default(1)
+  status      String   @default("rencana") // rencana | diundang | konfirmasi
+  catatan     String?
+  createdAt   DateTime @default(now())
+}
+
+/// Alokasi budget per kategori (opsional / perencanaan)
+model BudgetCategory {
+  id            Int    @id @default(autoincrement())
+  namaKategori  String @unique
+  alokasiRencana Int   @default(0)
+}
+
+/// Pengaturan global (single-row)
+model Setting {
+  id             Int      @id @default(1)
+  namaPengantin1 String   @default("")
+  namaPengantin2 String   @default("")
+  tanggalHariH   DateTime?
+  totalAnggaran  Int      @default(0)
+  updatedAt      DateTime @updatedAt
+}
