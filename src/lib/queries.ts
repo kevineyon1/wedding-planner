@@ -72,11 +72,20 @@ export async function getTodoSummary() {
   };
 }
 
-/** Ringkasan tamu */
+/** Ringkasan tamu, termasuk breakdown sisi pria/wanita */
 export async function getGuestSummary() {
-  const guests = await prisma.guest.findMany({ select: { jumlahOrang: true } });
+  const guests = await prisma.guest.findMany({ select: { jumlahOrang: true, sisi: true } });
+  const totalPria = guests
+    .filter((g) => g.sisi === "pria")
+    .reduce((s, g) => s + g.jumlahOrang, 0);
+  const totalWanita = guests
+    .filter((g) => g.sisi === "wanita")
+    .reduce((s, g) => s + g.jumlahOrang, 0);
+
   return {
     totalUndangan: guests.length,
     totalOrang: guests.reduce((s, g) => s + g.jumlahOrang, 0),
+    totalPria,
+    totalWanita,
   };
 }

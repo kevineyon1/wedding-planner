@@ -129,6 +129,14 @@ export default async function DashboardPage() {
           <p className="text-xs text-muted">
             estimasi orang • {guest.totalUndangan} undangan
           </p>
+          <div className="flex gap-4 mt-3 pt-3 border-t border-border text-xs">
+            <span className="text-muted">
+              🤵 Pria <b className="text-foreground">{guest.totalPria}</b>
+            </span>
+            <span className="text-muted">
+              👰 Wanita <b className="text-foreground">{guest.totalWanita}</b>
+            </span>
+          </div>
         </Link>
       </div>
     </div>

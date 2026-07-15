@@ -53,6 +53,9 @@ export function Nav() {
           🚪 Keluar
         </button>
       </form>
+      <p className="mt-4 px-2 text-[10px] text-muted/70 hidden md:block">
+        Created by Kevin Gideon
+      </p>
     </nav>
   );
 }
