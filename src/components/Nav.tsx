@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/actions/auth";
 
 const links = [
   { href: "/", label: "Dashboard", icon: "🏠" },
@@ -44,6 +45,14 @@ export function Nav() {
           );
         })}
       </ul>
+      <form action={logout} className="mt-4 px-2 hidden md:block">
+        <button
+          type="submit"
+          className="text-xs text-muted hover:text-primary transition-colors"
+        >
+          🚪 Keluar
+        </button>
+      </form>
     </nav>
   );
 }

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/require-auth";
 
 function parseRupiah(raw: FormDataEntryValue | null): number {
   if (!raw) return 0;
@@ -16,6 +17,7 @@ function str(raw: FormDataEntryValue | null): string | null {
 }
 
 export async function createVendor(formData: FormData) {
+  await requireAuth();
   const nama = str(formData.get("nama"));
   const kategori = str(formData.get("kategori"));
   if (!nama || !kategori) return;
@@ -39,6 +41,7 @@ export async function createVendor(formData: FormData) {
 }
 
 export async function updateVendor(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   if (!id) return;
   const nama = str(formData.get("nama"));
@@ -66,6 +69,7 @@ export async function updateVendor(formData: FormData) {
 
 /** Ubah status cepat (mis. dari dropdown di list) */
 export async function setVendorStatus(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   const status = str(formData.get("status"));
   if (!id || !status) return;
@@ -76,6 +80,7 @@ export async function setVendorStatus(formData: FormData) {
 }
 
 export async function deleteVendor(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   if (!id) return;
   await prisma.vendor.delete({ where: { id } });

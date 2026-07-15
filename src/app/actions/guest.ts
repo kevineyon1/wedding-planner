@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/require-auth";
 
 function str(raw: FormDataEntryValue | null): string | null {
   const v = raw ? String(raw).trim() : "";
@@ -9,6 +10,7 @@ function str(raw: FormDataEntryValue | null): string | null {
 }
 
 export async function createGuest(formData: FormData) {
+  await requireAuth();
   const nama = str(formData.get("nama"));
   if (!nama) return;
   const jumlah = Number(formData.get("jumlahOrang")) || 1;
@@ -27,6 +29,7 @@ export async function createGuest(formData: FormData) {
 }
 
 export async function setGuestStatus(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   const status = str(formData.get("status"));
   if (!id || !status) return;
@@ -35,6 +38,7 @@ export async function setGuestStatus(formData: FormData) {
 }
 
 export async function deleteGuest(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   if (!id) return;
   await prisma.guest.delete({ where: { id } });

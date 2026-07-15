@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/require-auth";
 
 function str(raw: FormDataEntryValue | null): string | null {
   const v = raw ? String(raw).trim() : "";
@@ -9,6 +10,7 @@ function str(raw: FormDataEntryValue | null): string | null {
 }
 
 export async function createTodo(formData: FormData) {
+  await requireAuth();
   const judul = str(formData.get("judul"));
   if (!judul) return;
   const deadlineRaw = str(formData.get("deadline"));
@@ -26,6 +28,7 @@ export async function createTodo(formData: FormData) {
 }
 
 export async function setTodoStatus(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   const status = str(formData.get("status"));
   if (!id || !status) return;
@@ -35,6 +38,7 @@ export async function setTodoStatus(formData: FormData) {
 }
 
 export async function deleteTodo(formData: FormData) {
+  await requireAuth();
   const id = Number(formData.get("id"));
   if (!id) return;
   await prisma.todo.delete({ where: { id } });

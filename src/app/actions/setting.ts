@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/require-auth";
 
 function parseRupiah(raw: FormDataEntryValue | null): number {
   if (!raw) return 0;
@@ -10,6 +11,7 @@ function parseRupiah(raw: FormDataEntryValue | null): number {
 }
 
 export async function updateSetting(formData: FormData) {
+  await requireAuth();
   const namaPengantin1 = String(formData.get("namaPengantin1") ?? "").trim();
   const namaPengantin2 = String(formData.get("namaPengantin2") ?? "").trim();
   const totalAnggaran = parseRupiah(formData.get("totalAnggaran"));
