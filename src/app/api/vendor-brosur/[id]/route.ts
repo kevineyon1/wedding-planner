@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { readFile } from "fs/promises";
 import { COOKIE_NAME, verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { brosurFilePath } from "@/lib/upload";
+import { brosurFilePath, brosurMimeType } from "@/lib/upload";
 
 // Route handler tidak ikut ter-proteksi oleh layout (protected)/layout.tsx,
 // jadi auth harus dicek manual di sini.
@@ -31,8 +31,8 @@ export async function GET(
     const buffer = await readFile(brosurFilePath(vendor.brosurPath));
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${vendor.brosurNama ?? "brosur.pdf"}"`,
+        "Content-Type": brosurMimeType(vendor.brosurPath),
+        "Content-Disposition": `inline; filename="${vendor.brosurNama ?? "lampiran"}"`,
       },
     });
   } catch {

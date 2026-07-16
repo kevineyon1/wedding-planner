@@ -17,6 +17,11 @@ const STATUS_STYLE: Record<string, string> = {
   booked: "bg-emerald-100 text-emerald-700",
 };
 
+function isImageFile(name: string | null | undefined): boolean {
+  if (!name) return false;
+  return /\.(jpe?g|png|webp|gif)$/i.test(name);
+}
+
 export default async function VendorPage() {
   const vendors = await prisma.vendor.findMany({
     orderBy: [{ kategori: "asc" }, { hargaPenawaran: "asc" }],
@@ -125,7 +130,8 @@ export default async function VendorPage() {
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline"
                               >
-                                📄 {v.brosurNama ?? "Lihat brosur"}
+                                {isImageFile(v.brosurNama) ? "🖼️" : "📄"}{" "}
+                                {v.brosurNama ?? "Lihat lampiran"}
                               </a>
                             )}
                           </div>

@@ -19,6 +19,11 @@ type Vendor = {
   brosurNama: string | null;
 };
 
+function isImageFile(name: string | null | undefined): boolean {
+  if (!name) return false;
+  return /\.(jpe?g|png|webp|gif)$/i.test(name);
+}
+
 export function VendorFormDialog({
   vendor,
   trigger,
@@ -176,7 +181,7 @@ export function VendorFormDialog({
               </div>
 
               <div>
-                <label className="label">Brosur (PDF)</label>
+                <label className="label">Brosur / Gambar</label>
                 {isEdit && vendor?.brosurPath && !hapusBrosur ? (
                   <div className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm mb-2">
                     <a
@@ -185,7 +190,8 @@ export function VendorFormDialog({
                       rel="noopener noreferrer"
                       className="text-primary hover:underline truncate"
                     >
-                      📄 {vendor.brosurNama ?? "Lihat brosur"}
+                      {isImageFile(vendor.brosurNama) ? "🖼️" : "📄"}{" "}
+                      {vendor.brosurNama ?? "Lihat lampiran"}
                     </a>
                     <button
                       type="button"
@@ -206,11 +212,12 @@ export function VendorFormDialog({
                 <input
                   type="file"
                   name="brosur"
-                  accept="application/pdf"
+                  accept="application/pdf,image/*"
                   className="input file:mr-3 file:rounded-md file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:text-primary file:text-sm"
                 />
                 <p className="text-xs text-muted mt-1">
-                  Upload brosur/penawaran vendor dalam format PDF (opsional).
+                  Upload brosur/penawaran vendor dalam format PDF atau gambar
+                  (JPG/PNG), opsional.
                 </p>
               </div>
 
