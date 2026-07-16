@@ -168,9 +168,13 @@ export function VendorFormDialog({
                 <textarea
                   name="deskripsiPaket"
                   defaultValue={vendor?.deskripsiPaket ?? ""}
-                  className="input min-h-16"
-                  placeholder="Apa saja yang termasuk dalam paket..."
+                  className="input min-h-24"
+                  placeholder={"Tulis 1 poin per baris, contoh:\nCrew 10-15 orang\nFull day coverage\nBonus confetti machine"}
                 />
+                <p className="text-xs text-muted mt-1">
+                  Tekan Enter untuk poin baru — akan tampil sebagai daftar
+                  bullet.
+                </p>
               </div>
 
               <div>

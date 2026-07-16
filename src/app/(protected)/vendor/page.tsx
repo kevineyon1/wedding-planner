@@ -22,6 +22,14 @@ function isImageFile(name: string | null | undefined): boolean {
   return /\.(jpe?g|png|webp|gif)$/i.test(name);
 }
 
+/** Pecah teks jadi baris, buang baris kosong, untuk ditampilkan sbg bullet list. */
+function toLines(text: string): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim().replace(/^[-•*]\s*/, ""))
+    .filter(Boolean);
+}
+
 export default async function VendorPage() {
   const vendors = await prisma.vendor.findMany({
     orderBy: [{ kategori: "asc" }, { hargaPenawaran: "asc" }],
@@ -103,9 +111,11 @@ export default async function VendorPage() {
                             </p>
                           )}
                           {v.deskripsiPaket && (
-                            <p className="text-sm text-foreground/80 mt-1">
-                              {v.deskripsiPaket}
-                            </p>
+                            <ul className="text-sm text-foreground/80 mt-1 space-y-0.5 list-disc list-inside">
+                              {toLines(v.deskripsiPaket).map((line, i) => (
+                                <li key={i}>{line}</li>
+                              ))}
+                            </ul>
                           )}
                           {v.catatan && (
                             <p className="text-xs text-muted mt-1 italic">
