@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createVendor, updateVendor } from "@/app/actions/vendor";
 import { KATEGORI_VENDOR, STATUS_VENDOR, LABEL_STATUS_VENDOR } from "@/lib/constants";
 
@@ -34,8 +34,17 @@ export function VendorFormDialog({
   const [open, setOpen] = useState(false);
   const [kategori, setKategori] = useState(vendor?.kategori ?? "");
   const [hapusBrosur, setHapusBrosur] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const isEdit = Boolean(vendor);
   const isVenue = kategori === "Venue";
+
+  function handleAction(fd: FormData) {
+    startTransition(async () => {
+      if (isEdit) await updateVendor(fd);
+      else await createVendor(fd);
+      setOpen(false);
+    });
+  }
 
   return (
     <>
@@ -49,7 +58,7 @@ export function VendorFormDialog({
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 overflow-y-auto"
-          onClick={() => setOpen(false)}
+          onClick={() => !isPending && setOpen(false)}
         >
           <div
             className="card w-full max-w-lg my-8 p-5"
@@ -60,22 +69,16 @@ export function VendorFormDialog({
                 {isEdit ? "Edit Vendor" : "Tambah Vendor"}
               </h2>
               <button
-                onClick={() => setOpen(false)}
-                className="text-muted hover:text-foreground text-xl leading-none"
+                onClick={() => !isPending && setOpen(false)}
+                disabled={isPending}
+                className="text-muted hover:text-foreground text-xl leading-none disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Tutup"
               >
                 ×
               </button>
             </div>
 
-            <form
-              action={async (fd) => {
-                if (isEdit) await updateVendor(fd);
-                else await createVendor(fd);
-                setOpen(false);
-              }}
-              className="space-y-3"
-            >
+            <form action={handleAction} className="space-y-3">
               {isEdit && <input type="hidden" name="id" value={vendor!.id} />}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -231,16 +234,33 @@ export function VendorFormDialog({
                 />
               </div>
 
+              {isPending && (
+                <p className="text-xs text-primary text-center">
+                  Menyimpan{" "}
+                  {isEdit ? "perubahan" : "vendor"}... jangan tutup jendela ini,
+                  bisa agak lama kalau ada file yang diupload.
+                </p>
+              )}
+
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="btn-ghost"
+                  disabled={isPending}
+                  className="btn-ghost disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Batal
                 </button>
-                <button type="submit" className="btn-primary">
-                  {isEdit ? "Simpan Perubahan" : "Tambah"}
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPending
+                    ? "Menyimpan..."
+                    : isEdit
+                      ? "Simpan Perubahan"
+                      : "Tambah"}
                 </button>
               </div>
             </form>
