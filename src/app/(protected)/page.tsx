@@ -5,16 +5,19 @@ import {
   getTodoSummary,
   getGuestSummary,
   getPaymentSummary,
+  getVendorComparison,
 } from "@/lib/queries";
 import { formatRupiah, formatTanggal, hariMenuju } from "@/lib/format";
+import { VendorCompareSection } from "@/components/VendorCompareSection";
 
 export default async function DashboardPage() {
-  const [setting, budget, todo, guest, payment] = await Promise.all([
+  const [setting, budget, todo, guest, payment, vendorCompare] = await Promise.all([
     getSetting(),
     getBudgetSummary(),
     getTodoSummary(),
     getGuestSummary(),
     getPaymentSummary(),
+    getVendorComparison(),
   ]);
 
   const sisaHari = hariMenuju(setting.tanggalHariH);
@@ -139,6 +142,8 @@ export default async function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      <VendorCompareSection groups={vendorCompare} />
     </div>
   );
 }

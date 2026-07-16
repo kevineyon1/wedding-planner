@@ -72,6 +72,56 @@ export async function getTodoSummary() {
   };
 }
 
+export type VendorCompareItem = {
+  id: number;
+  nama: string;
+  status: string;
+  hargaPenawaran: number;
+  pax: number | null;
+  isTermurah: boolean;
+};
+
+export type VendorCompareGroup = {
+  kategori: string;
+  vendors: VendorCompareItem[];
+  maxHarga: number;
+};
+
+/** Vendor per kategori (yg punya 2+ kandidat) diurutkan harga, utk perbandingan visual. */
+export async function getVendorComparison(): Promise<VendorCompareGroup[]> {
+  const vendors = await prisma.vendor.findMany({
+    select: { id: true, nama: true, kategori: true, status: true, hargaPenawaran: true, pax: true },
+    orderBy: { hargaPenawaran: "asc" },
+  });
+
+  const grouped = new Map<string, typeof vendors>();
+  for (const v of vendors) {
+    if (!grouped.has(v.kategori)) grouped.set(v.kategori, []);
+    grouped.get(v.kategori)!.push(v);
+  }
+
+  const groups: VendorCompareGroup[] = [];
+  for (const [kategori, list] of grouped) {
+    if (list.length < 2) continue; // tidak ada gunanya "bandingkan" kalau cuma 1
+    const maxHarga = Math.max(...list.map((v) => v.hargaPenawaran), 1);
+    const minHarga = Math.min(...list.map((v) => v.hargaPenawaran));
+    groups.push({
+      kategori,
+      maxHarga,
+      vendors: list.map((v) => ({
+        id: v.id,
+        nama: v.nama,
+        status: v.status,
+        hargaPenawaran: v.hargaPenawaran,
+        pax: v.pax,
+        isTermurah: v.hargaPenawaran === minHarga,
+      })),
+    });
+  }
+
+  return groups.sort((a, b) => a.kategori.localeCompare(b.kategori));
+}
+
 /** Ringkasan tamu, termasuk breakdown sisi pria/wanita */
 export async function getGuestSummary() {
   const guests = await prisma.guest.findMany({ select: { jumlahOrang: true, sisi: true } });
