@@ -18,6 +18,17 @@ export function formatTanggal(date: Date | string | null | undefined): string {
   }).format(d);
 }
 
+/** Ubah nomor telepon Indonesia (format bebas) jadi link wa.me, mis. "0812..." -> "https://wa.me/62812..." */
+export function waLink(nomor: string): string {
+  const digits = nomor.replace(/[^\d]/g, "");
+  const normalized = digits.startsWith("0")
+    ? "62" + digits.slice(1)
+    : digits.startsWith("62")
+      ? digits
+      : "62" + digits;
+  return `https://wa.me/${normalized}`;
+}
+
 /** Sisa hari menuju tanggal target (bisa negatif jika sudah lewat) */
 export function hariMenuju(date: Date | string | null | undefined): number | null {
   if (!date) return null;

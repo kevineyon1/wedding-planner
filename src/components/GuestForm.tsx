@@ -12,6 +12,7 @@ export function GuestForm() {
   const kategoriRef = useRef<HTMLSelectElement>(null);
   const sisiRef = useRef<HTMLSelectElement>(null);
   const jumlahRef = useRef<HTMLInputElement>(null);
+  const noWhatsappRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
 
   // Server Action + revalidatePath membuat Next.js me-render ulang
@@ -37,68 +38,78 @@ export function GuestForm() {
       // supaya cepat isi banyak tamu berturut-turut di sisi yang sama.
       if (namaRef.current) namaRef.current.value = "";
       if (jumlahRef.current) jumlahRef.current.value = "1";
+      if (noWhatsappRef.current) noWhatsappRef.current.value = "";
       namaRef.current?.focus();
     });
   }
 
   return (
-    <form
-      action={handleAction}
-      className="card p-4 mb-6 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end"
-    >
-      <div>
-        <label className="label">Nama tamu / keluarga</label>
+    <form action={handleAction} className="card p-4 mb-6 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
+        <div>
+          <label className="label">Nama tamu / keluarga</label>
+          <input
+            ref={namaRef}
+            name="nama"
+            required
+            className="input"
+            placeholder="mis. Keluarga Budi"
+          />
+        </div>
+        <div>
+          <label className="label">Kategori</label>
+          <select
+            ref={kategoriRef}
+            name="kategori"
+            className="input"
+            defaultValue="Teman"
+            onChange={(e) => localStorage.setItem(STORAGE_KEY_KATEGORI, e.target.value)}
+          >
+            {KATEGORI_TAMU.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label">Sisi</label>
+          <select
+            ref={sisiRef}
+            name="sisi"
+            className="input"
+            defaultValue="pria"
+            onChange={(e) => localStorage.setItem(STORAGE_KEY_SISI, e.target.value)}
+          >
+            <option value="pria">Pria</option>
+            <option value="wanita">Wanita</option>
+          </select>
+        </div>
+        <div>
+          <label className="label">Jml orang</label>
+          <input
+            ref={jumlahRef}
+            name="jumlahOrang"
+            type="number"
+            min={1}
+            defaultValue={1}
+            className="input w-24"
+          />
+        </div>
+        <button type="submit" className="btn-primary" disabled={isPending}>
+          {isPending ? "Menyimpan..." : "Tambah"}
+        </button>
+      </div>
+      <div className="sm:w-64">
+        <label className="label">Nomor WhatsApp (opsional)</label>
         <input
-          ref={namaRef}
-          name="nama"
-          required
+          ref={noWhatsappRef}
+          name="noWhatsapp"
+          type="tel"
           className="input"
-          placeholder="mis. Keluarga Budi"
+          placeholder="0812xxxxxxx"
         />
       </div>
-      <div>
-        <label className="label">Kategori</label>
-        <select
-          ref={kategoriRef}
-          name="kategori"
-          className="input"
-          defaultValue="Teman"
-          onChange={(e) => localStorage.setItem(STORAGE_KEY_KATEGORI, e.target.value)}
-        >
-          {KATEGORI_TAMU.map((k) => (
-            <option key={k} value={k}>
-              {k}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="label">Sisi</label>
-        <select
-          ref={sisiRef}
-          name="sisi"
-          className="input"
-          defaultValue="pria"
-          onChange={(e) => localStorage.setItem(STORAGE_KEY_SISI, e.target.value)}
-        >
-          <option value="pria">Pria</option>
-          <option value="wanita">Wanita</option>
-        </select>
-      </div>
-      <div>
-        <label className="label">Jml orang</label>
-        <input
-          ref={jumlahRef}
-          name="jumlahOrang"
-          type="number"
-          min={1}
-          defaultValue={1}
-          className="input w-24"
-        />
-      </div>
-      <button type="submit" className="btn-primary" disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Tambah"}
-      </button>
     </form>
   );
 }

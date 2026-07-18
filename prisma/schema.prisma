@@ -64,6 +64,7 @@ model Guest {
   sisi        String   @default("pria") // pria | wanita
   jumlahOrang Int      @default(1)
   status      String   @default("rencana") // rencana | diundang | konfirmasi
+  noWhatsapp  String? // opsional, format bebas
   catatan     String?
   createdAt   DateTime @default(now())
 }

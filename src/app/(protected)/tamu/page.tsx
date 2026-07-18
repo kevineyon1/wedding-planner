@@ -4,6 +4,8 @@ import { setGuestStatus, deleteGuest } from "@/app/actions/guest";
 import { StatusSelect } from "@/components/StatusSelect";
 import { DeleteButton } from "@/components/DeleteButton";
 import { GuestForm } from "@/components/GuestForm";
+import { GuestEditDialog } from "@/components/GuestEditDialog";
+import { waLink } from "@/lib/format";
 
 const STATUS_TAMU = [
   { value: "rencana", label: "Rencana" },
@@ -126,6 +128,19 @@ export default async function TamuPage({
                 </div>
                 <p className="text-xs text-muted mt-0.5">
                   {g.kategori} • {g.jumlahOrang} orang
+                  {g.noWhatsapp && (
+                    <>
+                      {" • "}
+                      <a
+                        href={waLink(g.noWhatsapp)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        💬 {g.noWhatsapp}
+                      </a>
+                    </>
+                  )}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -137,6 +152,7 @@ export default async function TamuPage({
                     className="input py-1 text-xs w-auto"
                   />
                 </form>
+                <GuestEditDialog guest={g} />
                 <form action={deleteGuest}>
                   <input type="hidden" name="id" value={g.id} />
                   <DeleteButton confirmText={`Hapus tamu "${g.nama}"?`} />
