@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { createVendor, updateVendor } from "@/app/actions/vendor";
 import { KATEGORI_VENDOR, STATUS_VENDOR, LABEL_STATUS_VENDOR } from "@/lib/constants";
+import { formatRupiah } from "@/lib/format";
 
 type Vendor = {
   id: number;
@@ -10,6 +11,8 @@ type Vendor = {
   kategori: string;
   kontak: string | null;
   hargaPenawaran: number;
+  hargaMode: string;
+  hargaPerPax: number | null;
   pax: number | null;
   deskripsiPaket: string | null;
   status: string;
@@ -34,9 +37,16 @@ export function VendorFormDialog({
   const [open, setOpen] = useState(false);
   const [kategori, setKategori] = useState(vendor?.kategori ?? "");
   const [hapusBrosur, setHapusBrosur] = useState(false);
+  const [hargaMode, setHargaMode] = useState(vendor?.hargaMode ?? "total");
+  const [pax, setPax] = useState(vendor?.pax?.toString() ?? "");
+  const [hargaPerPax, setHargaPerPax] = useState(vendor?.hargaPerPax?.toString() ?? "");
   const [isPending, startTransition] = useTransition();
   const isEdit = Boolean(vendor);
   const isVenue = kategori === "Venue";
+
+  const paxNum = parseInt(pax.replace(/[^\d]/g, ""), 10) || 0;
+  const hargaPerPaxNum = parseInt(hargaPerPax.replace(/[^\d]/g, ""), 10) || 0;
+  const estimasiTotal = paxNum * hargaPerPaxNum;
 
   function handleAction(fd: FormData) {
     startTransition(async () => {
@@ -113,43 +123,110 @@ export function VendorFormDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Harga penawaran (Rp)</label>
-                  <input
-                    name="hargaPenawaran"
-                    inputMode="numeric"
-                    defaultValue={vendor?.hargaPenawaran || ""}
-                    className="input"
-                    placeholder="15000000"
-                  />
-                </div>
-                <div>
-                  <label className="label">Status</label>
-                  <select
-                    name="status"
-                    defaultValue={vendor?.status ?? "wishlist"}
-                    className="input"
-                  >
-                    {STATUS_VENDOR.map((s) => (
-                      <option key={s} value={s}>
-                        {LABEL_STATUS_VENDOR[s]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
               {isVenue && (
                 <div>
                   <label className="label">Pax (kapasitas tamu)</label>
                   <input
                     name="pax"
                     inputMode="numeric"
-                    defaultValue={vendor?.pax ?? ""}
+                    value={pax}
+                    onChange={(e) => setPax(e.target.value)}
                     className="input"
                     placeholder="mis. 300"
                   />
+                </div>
+              )}
+
+              {isVenue && (
+                <div>
+                  <label className="label">Mode Harga</label>
+                  <div className="flex gap-4 text-sm">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="hargaMode"
+                        value="total"
+                        checked={hargaMode === "total"}
+                        onChange={() => setHargaMode("total")}
+                      />
+                      Harga Total
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="hargaMode"
+                        value="per_pax"
+                        checked={hargaMode === "per_pax"}
+                        onChange={() => setHargaMode("per_pax")}
+                      />
+                      Harga per Pax
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {isVenue && hargaMode === "per_pax" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">Harga per Pax (Rp)</label>
+                    <input
+                      name="hargaPerPax"
+                      inputMode="numeric"
+                      value={hargaPerPax}
+                      onChange={(e) => setHargaPerPax(e.target.value)}
+                      className="input"
+                      placeholder="250000"
+                    />
+                    {paxNum > 0 && hargaPerPaxNum > 0 && (
+                      <p className="text-xs text-muted mt-1">
+                        ≈ {formatRupiah(estimasiTotal)} ({paxNum} pax ×{" "}
+                        {formatRupiah(hargaPerPaxNum)})
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="label">Status</label>
+                    <select
+                      name="status"
+                      defaultValue={vendor?.status ?? "wishlist"}
+                      className="input"
+                    >
+                      {STATUS_VENDOR.map((s) => (
+                        <option key={s} value={s}>
+                          {LABEL_STATUS_VENDOR[s]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="label">
+                      {isVenue ? "Harga Total (Rp)" : "Harga penawaran (Rp)"}
+                    </label>
+                    <input
+                      name="hargaPenawaran"
+                      inputMode="numeric"
+                      defaultValue={vendor?.hargaPenawaran || ""}
+                      className="input"
+                      placeholder="15000000"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Status</label>
+                    <select
+                      name="status"
+                      defaultValue={vendor?.status ?? "wishlist"}
+                      className="input"
+                    >
+                      {STATUS_VENDOR.map((s) => (
+                        <option key={s} value={s}>
+                          {LABEL_STATUS_VENDOR[s]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
 

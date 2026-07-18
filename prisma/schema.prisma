@@ -16,7 +16,9 @@ model Vendor {
   nama           String
   kategori       String // Venue, Katering, Dekorasi, Dokumentasi, MUA, Busana, dll
   kontak         String? // WA / IG / telepon
-  hargaPenawaran Int       @default(0) // dalam Rupiah
+  hargaPenawaran Int       @default(0) // dalam Rupiah, SELALU total (dihitung otomatis kalau hargaMode = per_pax)
+  hargaMode      String    @default("total") // total | per_pax
+  hargaPerPax    Int? // nominal per pax, dipakai kalau hargaMode = per_pax
   pax            Int? // kapasitas tamu, relevan utk kategori Venue
   deskripsiPaket String?
   status         String    @default("wishlist") // wishlist | shortlist | dipilih | booked

@@ -30,6 +30,24 @@ function getBrosurFile(formData: FormData): File | null {
   return null;
 }
 
+/** Hitung hargaPenawaran (total) & hargaPerPax dari mode yang dipilih di form. */
+function resolveHarga(formData: FormData) {
+  const hargaMode = str(formData.get("hargaMode")) === "per_pax" ? "per_pax" : "total";
+  const pax = parseIntOrNull(formData.get("pax"));
+
+  if (hargaMode === "per_pax") {
+    const hargaPerPax = parseRupiah(formData.get("hargaPerPax"));
+    const hargaPenawaran = pax && pax > 0 ? hargaPerPax * pax : hargaPerPax;
+    return { hargaMode, hargaPerPax, hargaPenawaran };
+  }
+
+  return {
+    hargaMode,
+    hargaPerPax: null,
+    hargaPenawaran: parseRupiah(formData.get("hargaPenawaran")),
+  };
+}
+
 export async function createVendor(formData: FormData) {
   await requireAuth();
   const nama = str(formData.get("nama"));
@@ -38,13 +56,16 @@ export async function createVendor(formData: FormData) {
 
   const brosurFile = getBrosurFile(formData);
   const brosurPath = brosurFile ? await saveBrosurFile(brosurFile) : null;
+  const harga = resolveHarga(formData);
 
   await prisma.vendor.create({
     data: {
       nama,
       kategori,
       kontak: str(formData.get("kontak")),
-      hargaPenawaran: parseRupiah(formData.get("hargaPenawaran")),
+      hargaPenawaran: harga.hargaPenawaran,
+      hargaMode: harga.hargaMode,
+      hargaPerPax: harga.hargaPerPax,
       pax: parseIntOrNull(formData.get("pax")),
       deskripsiPaket: str(formData.get("deskripsiPaket")),
       status: str(formData.get("status")) ?? "wishlist",
@@ -90,13 +111,17 @@ export async function updateVendor(formData: FormData) {
     brosurNama = null;
   }
 
+  const harga = resolveHarga(formData);
+
   await prisma.vendor.update({
     where: { id },
     data: {
       nama,
       kategori,
       kontak: str(formData.get("kontak")),
-      hargaPenawaran: parseRupiah(formData.get("hargaPenawaran")),
+      hargaPenawaran: harga.hargaPenawaran,
+      hargaMode: harga.hargaMode,
+      hargaPerPax: harga.hargaPerPax,
       pax: parseIntOrNull(formData.get("pax")),
       deskripsiPaket: str(formData.get("deskripsiPaket")),
       status: str(formData.get("status")) ?? "wishlist",
