@@ -3,6 +3,7 @@ export const KATEGORI_VENDOR = [
   "Venue",
   "Catering",
   "Wedding Organizer",
+  "WO All In",
   "Photography",
   "MUA",
   "Attire",
@@ -10,6 +11,7 @@ export const KATEGORI_VENDOR = [
   "Decoration",
   "Entertainment",
   "MC",
+  "MCU (Cek Kesehatan)",
 ] as const;
 
 /** Status pilihan vendor */

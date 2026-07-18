@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { getBudgetSummary, getPaymentSummary } from "@/lib/queries";
+import { getBudgetSummary, getPaymentSummary, getBookedVendorPayments } from "@/lib/queries";
 import { formatRupiah } from "@/lib/format";
+import { VendorPaymentCard } from "@/components/VendorPaymentCard";
 
 export default async function BudgetPage() {
   const b = await getBudgetSummary();
   const p = await getPaymentSummary();
+  const bookedVendors = await getBookedVendorPayments();
 
   return (
     <div>
@@ -110,7 +112,7 @@ export default async function BudgetPage() {
       </section>
 
       {/* Ringkasan pembayaran */}
-      <section>
+      <section className="mb-6">
         <h2 className="font-semibold mb-2">Pembayaran</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="card p-4">
@@ -132,9 +134,27 @@ export default async function BudgetPage() {
             </p>
           </div>
         </div>
-        <p className="text-xs text-muted mt-2">
-          Catatan pembayaran per vendor akan tersedia di fase berikutnya.
-        </p>
+      </section>
+
+      {/* Pembayaran per vendor (booked) */}
+      <section>
+        <h2 className="font-semibold mb-2">Status Pembayaran per Vendor</h2>
+        {bookedVendors.length === 0 ? (
+          <div className="card p-6 text-center text-muted text-sm">
+            Belum ada vendor berstatus <b>Booked</b>. Tandai vendor sebagai
+            Booked di{" "}
+            <Link href="/vendor" className="text-primary underline">
+              halaman Vendor
+            </Link>{" "}
+            untuk mulai catat pembayarannya di sini.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {bookedVendors.map((v) => (
+              <VendorPaymentCard key={v.id} vendor={v} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

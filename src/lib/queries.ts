@@ -59,6 +59,52 @@ export async function getPaymentSummary() {
   };
 }
 
+export type VendorPaymentInfo = {
+  id: number;
+  nama: string;
+  kategori: string;
+  harga: number;
+  totalDibayar: number;
+  sisa: number;
+  lunas: boolean;
+  payments: {
+    id: number;
+    jumlah: number;
+    jenis: string;
+    tanggalBayar: Date | null;
+    catatan: string | null;
+  }[];
+};
+
+/** Vendor berstatus "booked" beserta riwayat & sisa pembayarannya. */
+export async function getBookedVendorPayments(): Promise<VendorPaymentInfo[]> {
+  const vendors = await prisma.vendor.findMany({
+    where: { status: "booked" },
+    include: { payments: { orderBy: { tanggalBayar: "desc" } } },
+    orderBy: { kategori: "asc" },
+  });
+
+  return vendors.map((v) => {
+    const totalDibayar = v.payments.reduce((s, p) => s + p.jumlah, 0);
+    return {
+      id: v.id,
+      nama: v.nama,
+      kategori: v.kategori,
+      harga: v.hargaPenawaran,
+      totalDibayar,
+      sisa: Math.max(0, v.hargaPenawaran - totalDibayar),
+      lunas: v.hargaPenawaran > 0 && totalDibayar >= v.hargaPenawaran,
+      payments: v.payments.map((p) => ({
+        id: p.id,
+        jumlah: p.jumlah,
+        jenis: p.jenis,
+        tanggalBayar: p.tanggalBayar,
+        catatan: p.catatan,
+      })),
+    };
+  });
+}
+
 /** Ringkasan progres to-do */
 export async function getTodoSummary() {
   const [total, selesai] = await Promise.all([
