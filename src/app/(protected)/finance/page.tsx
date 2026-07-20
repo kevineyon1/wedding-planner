@@ -1,17 +1,12 @@
-import { prisma } from "@/lib/prisma";
 import { getFinanceSummary, getTransactions } from "@/lib/queries";
 import { formatRupiah } from "@/lib/format";
 import { TransactionFormDialog } from "@/components/TransactionFormDialog";
 import { FinanceTable } from "@/components/FinanceTable";
 
 export default async function FinancePage() {
-  const [summary, transactions, vendors] = await Promise.all([
+  const [summary, transactions] = await Promise.all([
     getFinanceSummary(),
     getTransactions(),
-    prisma.vendor.findMany({
-      select: { id: true, nama: true, kategori: true, hargaPenawaran: true },
-      orderBy: [{ kategori: "asc" }, { nama: "asc" }],
-    }),
   ]);
 
   return (
@@ -23,7 +18,7 @@ export default async function FinancePage() {
             Catat transaksi, DP, cicilan, dan hutang per vendor.
           </p>
         </div>
-        <TransactionFormDialog vendors={vendors} />
+        <TransactionFormDialog />
       </header>
 
       {/* Ringkasan */}

@@ -8,6 +8,7 @@ import {
 } from "@/app/actions/transaction";
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import type { TransactionRow } from "@/lib/queries";
+import { TransactionEditDialog } from "@/components/TransactionEditDialog";
 
 const JENIS_LABEL: Record<string, string> = {
   dp: "DP",
@@ -59,8 +60,8 @@ export function FinanceTable({ transactions }: { transactions: TransactionRow[] 
                   onClick={() => setExpandedId(expanded ? null : t.id)}
                 >
                   <td className="px-4 py-3">
-                    <div className="font-medium">{t.vendorNama}</div>
-                    <div className="text-xs text-muted">{t.vendorKategori}</div>
+                    <div className="font-medium">{t.namaVendor}</div>
+                    <div className="text-xs text-muted">{t.kategori}</div>
                   </td>
                   <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
                     {formatRupiah(t.totalHarga)}
@@ -127,7 +128,7 @@ function TransactionDetail({ transaction: t }: { transaction: TransactionRow }) 
   }
 
   function handleDeleteTransaction() {
-    if (!confirm(`Hapus transaksi "${t.vendorNama}"? Semua riwayat pembayarannya ikut terhapus.`)) return;
+    if (!confirm(`Hapus transaksi "${t.namaVendor}"? Semua riwayat pembayarannya ikut terhapus.`)) return;
     startTransition(async () => {
       const fd = new FormData();
       fd.set("id", String(t.id));
@@ -219,7 +220,8 @@ function TransactionDetail({ transaction: t }: { transaction: TransactionRow }) 
         </form>
       )}
 
-      <div className="flex justify-end pt-1">
+      <div className="flex items-center justify-end gap-4 pt-1">
+        <TransactionEditDialog transaction={t} />
         <button
           type="button"
           onClick={handleDeleteTransaction}

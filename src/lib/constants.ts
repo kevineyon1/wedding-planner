@@ -10,8 +10,8 @@ export const KATEGORI_VENDOR = [
   "Hand Bouquet",
   "Decoration",
   "Entertainment",
-  "MC",
   "MCU (Cek Kesehatan)",
+  "Lainnya",
 ] as const;
 
 /** Status pilihan vendor */

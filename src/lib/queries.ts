@@ -74,9 +74,8 @@ export async function getGuestSummary() {
 
 export type TransactionRow = {
   id: number;
-  vendorId: number;
-  vendorNama: string;
-  vendorKategori: string;
+  kategori: string;
+  namaVendor: string;
   totalHarga: number;
   totalDibayar: number;
   sisaHutang: number;
@@ -96,7 +95,6 @@ export type TransactionRow = {
 export async function getTransactions(): Promise<TransactionRow[]> {
   const transactions = await prisma.transaction.findMany({
     include: {
-      vendor: { select: { nama: true, kategori: true } },
       payments: { orderBy: { tanggalBayar: "desc" } },
     },
     orderBy: [{ createdAt: "desc" }],
@@ -106,9 +104,8 @@ export async function getTransactions(): Promise<TransactionRow[]> {
     const totalDibayar = t.payments.reduce((s, p) => s + p.jumlah, 0);
     return {
       id: t.id,
-      vendorId: t.vendorId,
-      vendorNama: t.vendor.nama,
-      vendorKategori: t.vendor.kategori,
+      kategori: t.kategori,
+      namaVendor: t.namaVendor,
       totalHarga: t.totalHarga,
       totalDibayar,
       sisaHutang: Math.max(0, t.totalHarga - totalDibayar),

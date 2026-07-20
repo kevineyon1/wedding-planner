@@ -23,8 +23,10 @@ function toDate(raw: FormDataEntryValue | null): Date | null {
 /** Buat transaksi baru; kalau DP diisi, otomatis dicatat sbg pembayaran pertama. */
 export async function createTransaction(formData: FormData) {
   await requireAuth();
-  const vendorId = Number(formData.get("vendorId"));
-  if (!vendorId) return;
+  const kategori = str(formData.get("kategori"));
+  const namaVendor = str(formData.get("namaVendor"));
+  if (!kategori || !namaVendor) return;
+
   const totalHarga = parseRupiah(formData.get("totalHarga"));
   const dp = parseRupiah(formData.get("dp"));
   const tanggalDp = toDate(formData.get("tanggalDp"));
@@ -33,7 +35,8 @@ export async function createTransaction(formData: FormData) {
 
   await prisma.transaction.create({
     data: {
-      vendorId,
+      kategori,
+      namaVendor,
       totalHarga,
       deadline,
       catatan,
@@ -59,13 +62,17 @@ export async function updateTransaction(formData: FormData) {
   await requireAuth();
   const id = Number(formData.get("id"));
   if (!id) return;
+  const kategori = str(formData.get("kategori"));
+  const namaVendor = str(formData.get("namaVendor"));
+  if (!kategori || !namaVendor) return;
+
   const totalHarga = parseRupiah(formData.get("totalHarga"));
   const deadline = toDate(formData.get("deadline"));
   const catatan = str(formData.get("catatan"));
 
   await prisma.transaction.update({
     where: { id },
-    data: { totalHarga, deadline, catatan },
+    data: { kategori, namaVendor, totalHarga, deadline, catatan },
   });
 
   revalidatePath("/finance");

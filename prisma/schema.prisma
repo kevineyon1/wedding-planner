@@ -27,7 +27,6 @@ model Vendor {
   brosurPath     String? // nama file di disk (folder uploads/, di luar public/)
   brosurNama     String? // nama asli file saat diupload, utk ditampilkan
   payments       Payment[]
-  transactions   Transaction[] @relation("VendorTransactions")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -46,12 +45,12 @@ model Payment {
   createdAt       DateTime  @default(now())
 }
 
-/// Transaksi finansial dengan vendor — independen dari harga riset di katalog Vendor.
+/// Transaksi finansial — independen dari katalog Vendor, kategori & nama diisi langsung.
 model Transaction {
   id         Int                  @id @default(autoincrement())
-  vendorId   Int
-  vendor     Vendor               @relation("VendorTransactions", fields: [vendorId], references: [id], onDelete: Cascade)
-  totalHarga Int                  @default(0) // nominal deal final, boleh beda dari hargaPenawaran di katalog vendor
+  kategori   String // dari daftar KATEGORI_VENDOR, atau "Lainnya"
+  namaVendor String // nama vendor/penerima, diketik bebas
+  totalHarga Int                  @default(0)
   deadline   DateTime? // opsional, target tanggal lunas
   catatan    String?
   payments   TransactionPayment[]

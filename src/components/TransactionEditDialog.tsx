@@ -1,24 +1,34 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createTransaction } from "@/app/actions/transaction";
+import { updateTransaction } from "@/app/actions/transaction";
 import { KATEGORI_VENDOR } from "@/lib/constants";
+import type { TransactionRow } from "@/lib/queries";
 
-export function TransactionFormDialog() {
+function toDateInputValue(d: Date | string | null): string {
+  if (!d) return "";
+  return new Date(d).toISOString().slice(0, 10);
+}
+
+export function TransactionEditDialog({ transaction: t }: { transaction: TransactionRow }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleAction(fd: FormData) {
     startTransition(async () => {
-      await createTransaction(fd);
+      await updateTransaction(fd);
       setOpen(false);
     });
   }
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="btn-primary">
-        + Tambah Transaksi
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-xs text-primary hover:underline"
+      >
+        Edit
       </button>
 
       {open && (
@@ -27,11 +37,11 @@ export function TransactionFormDialog() {
           onClick={() => !isPending && setOpen(false)}
         >
           <div
-            className="card w-full max-w-lg my-8 p-5"
+            className="card w-full max-w-md my-8 p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Tambah Transaksi</h2>
+              <h2 className="text-lg font-semibold">Edit Transaksi</h2>
               <button
                 onClick={() => !isPending && setOpen(false)}
                 disabled={isPending}
@@ -43,29 +53,33 @@ export function TransactionFormDialog() {
             </div>
 
             <form action={handleAction} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">Kategori *</label>
-                  <select name="kategori" required defaultValue="" className="input">
-                    <option value="" disabled>
-                      Pilih kategori
+              <input type="hidden" name="id" value={t.id} />
+
+              <div>
+                <label className="label">Kategori *</label>
+                <select
+                  name="kategori"
+                  required
+                  defaultValue={t.kategori}
+                  className="input"
+                >
+                  {KATEGORI_VENDOR.map((k) => (
+                    <option key={k} value={k}>
+                      {k}
                     </option>
-                    {KATEGORI_VENDOR.map((k) => (
-                      <option key={k} value={k}>
-                        {k}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Nama Vendor *</label>
-                  <input
-                    name="namaVendor"
-                    required
-                    className="input"
-                    placeholder="mis. Studio Foto ABC"
-                  />
-                </div>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="label">Nama Vendor *</label>
+                <input
+                  name="namaVendor"
+                  required
+                  defaultValue={t.namaVendor}
+                  className="input"
+                  placeholder="Nama vendor / penerima"
+                />
               </div>
 
               <div>
@@ -74,36 +88,26 @@ export function TransactionFormDialog() {
                   name="totalHarga"
                   required
                   inputMode="numeric"
+                  defaultValue={t.totalHarga}
                   className="input"
-                  placeholder="50000000"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="label">DP (Rp)</label>
-                  <input
-                    name="dp"
-                    inputMode="numeric"
-                    className="input"
-                    placeholder="10000000 (opsional)"
-                  />
-                </div>
-                <div>
-                  <label className="label">Tanggal DP Dibayar</label>
-                  <input type="date" name="tanggalDp" className="input" />
-                </div>
               </div>
 
               <div>
                 <label className="label">Deadline Pelunasan (opsional)</label>
-                <input type="date" name="deadline" className="input" />
+                <input
+                  type="date"
+                  name="deadline"
+                  defaultValue={toDateInputValue(t.deadline)}
+                  className="input"
+                />
               </div>
 
               <div>
                 <label className="label">Catatan</label>
                 <textarea
                   name="catatan"
+                  defaultValue={t.catatan ?? ""}
                   className="input min-h-12"
                   placeholder="Catatan tambahan (opsional)..."
                 />
@@ -123,7 +127,7 @@ export function TransactionFormDialog() {
                   disabled={isPending}
                   className="btn-primary disabled:opacity-50"
                 >
-                  {isPending ? "Menyimpan..." : "Tambah"}
+                  {isPending ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
