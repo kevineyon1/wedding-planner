@@ -3,13 +3,7 @@
 import { useState, useTransition } from "react";
 import { createTransaction } from "@/app/actions/transaction";
 import { formatRupiah } from "@/lib/format";
-
-type VendorOption = {
-  id: number;
-  nama: string;
-  kategori: string;
-  hargaPenawaran: number;
-};
+import { VendorCombobox, type VendorOption } from "@/components/VendorCombobox";
 
 export function TransactionFormDialog({ vendors }: { vendors: VendorOption[] }) {
   const [open, setOpen] = useState(false);
@@ -19,14 +13,17 @@ export function TransactionFormDialog({ vendors }: { vendors: VendorOption[] }) 
 
   const selectedVendor = vendors.find((v) => v.id === Number(vendorId));
 
-  function handleVendorChange(id: string) {
-    setVendorId(id);
+  function handleVendorSelect(v: VendorOption | null) {
+    setVendorId(v ? String(v.id) : "");
     // Isi otomatis dari harga riset vendor, tapi tetap bisa diubah manual
-    const v = vendors.find((x) => x.id === Number(id));
     if (v && v.hargaPenawaran > 0) setTotalHarga(String(v.hargaPenawaran));
   }
 
   function handleAction(fd: FormData) {
+    if (!vendorId) {
+      alert("Pilih vendor dulu ya.");
+      return;
+    }
     startTransition(async () => {
       await createTransaction(fd);
       setOpen(false);
@@ -74,22 +71,12 @@ export function TransactionFormDialog({ vendors }: { vendors: VendorOption[] }) 
             <form action={handleAction} className="space-y-3">
               <div>
                 <label className="label">Vendor *</label>
-                <select
-                  name="vendorId"
-                  required
+                <input type="hidden" name="vendorId" value={vendorId} />
+                <VendorCombobox
+                  vendors={vendors}
                   value={vendorId}
-                  onChange={(e) => handleVendorChange(e.target.value)}
-                  className="input"
-                >
-                  <option value="" disabled>
-                    Pilih vendor
-                  </option>
-                  {vendors.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.nama} ({v.kategori})
-                    </option>
-                  ))}
-                </select>
+                  onSelect={handleVendorSelect}
+                />
               </div>
 
               <div>
