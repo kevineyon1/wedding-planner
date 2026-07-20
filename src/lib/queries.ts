@@ -41,70 +41,6 @@ export async function getBudgetSummary() {
   };
 }
 
-/** Ringkasan pembayaran: total tagihan vendor terpilih, sudah dibayar, sisa */
-export async function getPaymentSummary() {
-  const summary = await getBudgetSummary();
-  const totalTagihan = summary.totalBiaya;
-
-  const payments = await prisma.payment.findMany({
-    where: { vendor: { status: { in: STATUS_TERPILIH } } },
-    select: { jumlah: true },
-  });
-  const totalDibayar = payments.reduce((s, p) => s + p.jumlah, 0);
-
-  return {
-    totalTagihan,
-    totalDibayar,
-    sisaBayar: totalTagihan - totalDibayar,
-  };
-}
-
-export type VendorPaymentInfo = {
-  id: number;
-  nama: string;
-  kategori: string;
-  harga: number;
-  totalDibayar: number;
-  sisa: number;
-  lunas: boolean;
-  payments: {
-    id: number;
-    jumlah: number;
-    jenis: string;
-    tanggalBayar: Date | null;
-    catatan: string | null;
-  }[];
-};
-
-/** Vendor berstatus "booked" beserta riwayat & sisa pembayarannya. */
-export async function getBookedVendorPayments(): Promise<VendorPaymentInfo[]> {
-  const vendors = await prisma.vendor.findMany({
-    where: { status: "booked" },
-    include: { payments: { orderBy: { tanggalBayar: "desc" } } },
-    orderBy: { kategori: "asc" },
-  });
-
-  return vendors.map((v) => {
-    const totalDibayar = v.payments.reduce((s, p) => s + p.jumlah, 0);
-    return {
-      id: v.id,
-      nama: v.nama,
-      kategori: v.kategori,
-      harga: v.hargaPenawaran,
-      totalDibayar,
-      sisa: Math.max(0, v.hargaPenawaran - totalDibayar),
-      lunas: v.hargaPenawaran > 0 && totalDibayar >= v.hargaPenawaran,
-      payments: v.payments.map((p) => ({
-        id: p.id,
-        jumlah: p.jumlah,
-        jenis: p.jenis,
-        tanggalBayar: p.tanggalBayar,
-        catatan: p.catatan,
-      })),
-    };
-  });
-}
-
 /** Ringkasan progres to-do */
 export async function getTodoSummary() {
   const [total, selesai] = await Promise.all([
@@ -116,56 +52,6 @@ export async function getTodoSummary() {
     selesai,
     persen: total > 0 ? Math.round((selesai / total) * 100) : 0,
   };
-}
-
-export type VendorCompareItem = {
-  id: number;
-  nama: string;
-  status: string;
-  hargaPenawaran: number;
-  pax: number | null;
-  isTermurah: boolean;
-};
-
-export type VendorCompareGroup = {
-  kategori: string;
-  vendors: VendorCompareItem[];
-  maxHarga: number;
-};
-
-/** Vendor per kategori (yg punya 2+ kandidat) diurutkan harga, utk perbandingan visual. */
-export async function getVendorComparison(): Promise<VendorCompareGroup[]> {
-  const vendors = await prisma.vendor.findMany({
-    select: { id: true, nama: true, kategori: true, status: true, hargaPenawaran: true, pax: true },
-    orderBy: { hargaPenawaran: "asc" },
-  });
-
-  const grouped = new Map<string, typeof vendors>();
-  for (const v of vendors) {
-    if (!grouped.has(v.kategori)) grouped.set(v.kategori, []);
-    grouped.get(v.kategori)!.push(v);
-  }
-
-  const groups: VendorCompareGroup[] = [];
-  for (const [kategori, list] of grouped) {
-    if (list.length < 2) continue; // tidak ada gunanya "bandingkan" kalau cuma 1
-    const maxHarga = Math.max(...list.map((v) => v.hargaPenawaran), 1);
-    const minHarga = Math.min(...list.map((v) => v.hargaPenawaran));
-    groups.push({
-      kategori,
-      maxHarga,
-      vendors: list.map((v) => ({
-        id: v.id,
-        nama: v.nama,
-        status: v.status,
-        hargaPenawaran: v.hargaPenawaran,
-        pax: v.pax,
-        isTermurah: v.hargaPenawaran === minHarga,
-      })),
-    });
-  }
-
-  return groups.sort((a, b) => a.kategori.localeCompare(b.kategori));
 }
 
 /** Ringkasan tamu, termasuk breakdown sisi pria/wanita */
@@ -183,5 +69,89 @@ export async function getGuestSummary() {
     totalOrang: guests.reduce((s, g) => s + g.jumlahOrang, 0),
     totalPria,
     totalWanita,
+  };
+}
+
+export type TransactionRow = {
+  id: number;
+  vendorId: number;
+  vendorNama: string;
+  vendorKategori: string;
+  totalHarga: number;
+  totalDibayar: number;
+  sisaHutang: number;
+  lunas: boolean;
+  deadline: Date | null;
+  catatan: string | null;
+  payments: {
+    id: number;
+    jumlah: number;
+    jenis: string;
+    tanggalBayar: Date | null;
+    catatan: string | null;
+  }[];
+};
+
+/** Semua transaksi finance beserta riwayat & sisa pembayarannya, diurutkan deadline terdekat dulu. */
+export async function getTransactions(): Promise<TransactionRow[]> {
+  const transactions = await prisma.transaction.findMany({
+    include: {
+      vendor: { select: { nama: true, kategori: true } },
+      payments: { orderBy: { tanggalBayar: "desc" } },
+    },
+    orderBy: [{ createdAt: "desc" }],
+  });
+
+  const rows = transactions.map((t) => {
+    const totalDibayar = t.payments.reduce((s, p) => s + p.jumlah, 0);
+    return {
+      id: t.id,
+      vendorId: t.vendorId,
+      vendorNama: t.vendor.nama,
+      vendorKategori: t.vendor.kategori,
+      totalHarga: t.totalHarga,
+      totalDibayar,
+      sisaHutang: Math.max(0, t.totalHarga - totalDibayar),
+      lunas: t.totalHarga > 0 && totalDibayar >= t.totalHarga,
+      deadline: t.deadline,
+      catatan: t.catatan,
+      payments: t.payments.map((p) => ({
+        id: p.id,
+        jumlah: p.jumlah,
+        jenis: p.jenis,
+        tanggalBayar: p.tanggalBayar,
+        catatan: p.catatan,
+      })),
+    };
+  });
+
+  // Belum lunas & ada deadline duluan (terdekat dulu), lalu belum lunas tanpa deadline, lalu yang lunas
+  return rows.sort((a, b) => {
+    if (a.lunas !== b.lunas) return a.lunas ? 1 : -1;
+    if (a.deadline && b.deadline) return a.deadline.getTime() - b.deadline.getTime();
+    if (a.deadline) return -1;
+    if (b.deadline) return 1;
+    return 0;
+  });
+}
+
+/** Ringkasan finance: total tagihan, dibayar, hutang, dan jumlah transaksi lewat deadline. */
+export async function getFinanceSummary() {
+  const transactions = await getTransactions();
+  const totalTagihan = transactions.reduce((s, t) => s + t.totalHarga, 0);
+  const totalDibayar = transactions.reduce((s, t) => s + t.totalDibayar, 0);
+  const totalHutang = transactions.reduce((s, t) => s + t.sisaHutang, 0);
+
+  const now = new Date();
+  const jumlahLewatDeadline = transactions.filter(
+    (t) => !t.lunas && t.deadline && t.deadline.getTime() < now.getTime()
+  ).length;
+
+  return {
+    totalTagihan,
+    totalDibayar,
+    totalHutang,
+    jumlahTransaksi: transactions.length,
+    jumlahLewatDeadline,
   };
 }

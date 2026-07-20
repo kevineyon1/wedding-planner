@@ -1,19 +1,21 @@
 import Link from "next/link";
-import { getBudgetSummary, getPaymentSummary, getBookedVendorPayments } from "@/lib/queries";
+import { getBudgetSummary } from "@/lib/queries";
 import { formatRupiah } from "@/lib/format";
-import { VendorPaymentCard } from "@/components/VendorPaymentCard";
 
 export default async function BudgetPage() {
   const b = await getBudgetSummary();
-  const p = await getPaymentSummary();
-  const bookedVendors = await getBookedVendorPayments();
 
   return (
     <div>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">Budget Tracker</h1>
         <p className="text-sm text-muted">
-          Rencana vs biaya vendor terpilih.
+          Rencana anggaran vs harga riset vendor (Dipilih/Booked).{" "}
+          Untuk catat pembayaran & hutang, lihat{" "}
+          <Link href="/finance" className="text-primary underline">
+            halaman Finance
+          </Link>
+          .
         </p>
       </header>
 
@@ -79,7 +81,7 @@ export default async function BudgetPage() {
       )}
 
       {/* Rekap per kategori */}
-      <section className="mb-6">
+      <section>
         <h2 className="font-semibold mb-2">Biaya per Kategori</h2>
         {b.perKategori.length === 0 ? (
           <div className="card p-6 text-center text-muted text-sm">
@@ -107,52 +109,6 @@ export default async function BudgetPage() {
                 {formatRupiah(b.totalBiaya)}
               </span>
             </div>
-          </div>
-        )}
-      </section>
-
-      {/* Ringkasan pembayaran */}
-      <section className="mb-6">
-        <h2 className="font-semibold mb-2">Pembayaran</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="card p-4">
-            <p className="text-xs text-muted">Total Tagihan</p>
-            <p className="text-lg font-semibold mt-1">
-              {formatRupiah(p.totalTagihan)}
-            </p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs text-muted">Sudah Dibayar</p>
-            <p className="text-lg font-semibold mt-1 text-emerald-600">
-              {formatRupiah(p.totalDibayar)}
-            </p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs text-muted">Sisa Pelunasan</p>
-            <p className="text-lg font-semibold mt-1 text-amber-600">
-              {formatRupiah(p.sisaBayar)}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Pembayaran per vendor (booked) */}
-      <section>
-        <h2 className="font-semibold mb-2">Status Pembayaran per Vendor</h2>
-        {bookedVendors.length === 0 ? (
-          <div className="card p-6 text-center text-muted text-sm">
-            Belum ada vendor berstatus <b>Booked</b>. Tandai vendor sebagai
-            Booked di{" "}
-            <Link href="/vendor" className="text-primary underline">
-              halaman Vendor
-            </Link>{" "}
-            untuk mulai catat pembayarannya di sini.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {bookedVendors.map((v) => (
-              <VendorPaymentCard key={v.id} vendor={v} />
-            ))}
           </div>
         )}
       </section>

@@ -27,11 +27,12 @@ model Vendor {
   brosurPath     String? // nama file di disk (folder uploads/, di luar public/)
   brosurNama     String? // nama asli file saat diupload, utk ditampilkan
   payments       Payment[]
+  transactions   Transaction[] @relation("VendorTransactions")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
 
-/// Pembayaran ke vendor (DP / pelunasan)
+/// Pembayaran ke vendor (DP / pelunasan) — legacy, tidak dipakai lagi (digantikan Transaction)
 model Payment {
   id              Int       @id @default(autoincrement())
   vendorId        Int
@@ -43,6 +44,31 @@ model Payment {
   status          String    @default("belum") // belum | lunas
   catatan         String?
   createdAt       DateTime  @default(now())
+}
+
+/// Transaksi finansial dengan vendor — independen dari harga riset di katalog Vendor.
+model Transaction {
+  id         Int                  @id @default(autoincrement())
+  vendorId   Int
+  vendor     Vendor               @relation("VendorTransactions", fields: [vendorId], references: [id], onDelete: Cascade)
+  totalHarga Int                  @default(0) // nominal deal final, boleh beda dari hargaPenawaran di katalog vendor
+  deadline   DateTime? // opsional, target tanggal lunas
+  catatan    String?
+  payments   TransactionPayment[]
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+}
+
+/// Riwayat pembayaran per transaksi (DP, cicilan, pelunasan, dll)
+model TransactionPayment {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  jumlah        Int         @default(0)
+  jenis         String      @default("dp") // dp | cicilan | pelunasan | lainnya
+  tanggalBayar  DateTime?
+  catatan       String?
+  createdAt     DateTime    @default(now())
 }
 
 /// Tugas persiapan (checklist)

@@ -4,20 +4,17 @@ import {
   getBudgetSummary,
   getTodoSummary,
   getGuestSummary,
-  getPaymentSummary,
-  getVendorComparison,
+  getFinanceSummary,
 } from "@/lib/queries";
 import { formatRupiah, formatTanggal, hariMenuju } from "@/lib/format";
-import { VendorCompareSection } from "@/components/VendorCompareSection";
 
 export default async function DashboardPage() {
-  const [setting, budget, todo, guest, payment, vendorCompare] = await Promise.all([
+  const [setting, budget, todo, guest, finance] = await Promise.all([
     getSetting(),
     getBudgetSummary(),
     getTodoSummary(),
     getGuestSummary(),
-    getPaymentSummary(),
-    getVendorComparison(),
+    getFinanceSummary(),
   ]);
 
   const sisaHari = hariMenuju(setting.tanggalHariH);
@@ -107,19 +104,24 @@ export default async function DashboardPage() {
           <p className="text-xs mt-2 text-muted">{todo.persen}% progres</p>
         </Link>
 
-        {/* Vendor / Pembayaran */}
-        <Link href="/vendor" className="card p-5 hover:border-primary/40 transition-colors">
+        {/* Finance */}
+        <Link href="/finance" className="card p-5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold">🏷️ Vendor</h2>
+            <h2 className="font-semibold">🧾 Finance</h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
-          <p className="text-sm text-muted">Sudah dibayar</p>
-          <p className="text-xl font-semibold text-emerald-600">
-            {formatRupiah(payment.totalDibayar)}
+          <p className="text-sm text-muted">Total Hutang</p>
+          <p className="text-xl font-semibold text-amber-600">
+            {formatRupiah(finance.totalHutang)}
           </p>
-          <p className="text-xs text-amber-600 mt-1">
-            Sisa pelunasan: {formatRupiah(payment.sisaBayar)}
+          <p className="text-xs text-emerald-600 mt-1">
+            Sudah dibayar: {formatRupiah(finance.totalDibayar)}
           </p>
+          {finance.jumlahLewatDeadline > 0 && (
+            <p className="text-xs text-red-600 mt-1">
+              ⚠️ {finance.jumlahLewatDeadline} transaksi lewat deadline
+            </p>
+          )}
         </Link>
 
         {/* Tamu */}
@@ -142,8 +144,6 @@ export default async function DashboardPage() {
           </div>
         </Link>
       </div>
-
-      <VendorCompareSection groups={vendorCompare} />
     </div>
   );
 }
