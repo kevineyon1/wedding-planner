@@ -9,12 +9,18 @@ import {
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import type { TransactionRow } from "@/lib/queries";
 import { TransactionEditDialog } from "@/components/TransactionEditDialog";
+import { LABEL_ACARA } from "@/lib/constants";
 
 const JENIS_LABEL: Record<string, string> = {
   dp: "DP",
   cicilan: "Cicilan",
   pelunasan: "Pelunasan",
   lainnya: "Lainnya",
+};
+
+const ACARA_STYLE: Record<string, string> = {
+  wedding: "bg-primary-soft text-primary",
+  sanjit: "bg-amber-100 text-amber-700",
 };
 
 function isOverdue(t: TransactionRow): boolean {
@@ -60,7 +66,12 @@ export function FinanceTable({ transactions }: { transactions: TransactionRow[] 
                   onClick={() => setExpandedId(expanded ? null : t.id)}
                 >
                   <td className="px-4 py-3">
-                    <div className="font-medium">{t.namaVendor}</div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-medium">{t.namaVendor}</span>
+                      <span className={`badge ${ACARA_STYLE[t.acara] ?? ""}`}>
+                        {LABEL_ACARA[t.acara] ?? t.acara}
+                      </span>
+                    </div>
                     <div className="text-xs text-muted">{t.kategori}</div>
                   </td>
                   <td className="px-4 py-3 text-right font-medium whitespace-nowrap">

@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { STATUS_TERPILIH } from "./constants";
+import { STATUS_TERPILIH, ACARA_TRANSAKSI } from "./constants";
 
 /** Ambil setting global (single-row), buat default jika belum ada.
  *  Pakai upsert agar aman dari race condition saat dipanggil paralel. */
@@ -74,6 +74,7 @@ export async function getGuestSummary() {
 
 export type TransactionRow = {
   id: number;
+  acara: string;
   kategori: string;
   namaVendor: string;
   totalHarga: number;
@@ -104,6 +105,7 @@ export async function getTransactions(): Promise<TransactionRow[]> {
     const totalDibayar = t.payments.reduce((s, p) => s + p.jumlah, 0);
     return {
       id: t.id,
+      acara: t.acara,
       kategori: t.kategori,
       namaVendor: t.namaVendor,
       totalHarga: t.totalHarga,
@@ -132,7 +134,8 @@ export async function getTransactions(): Promise<TransactionRow[]> {
   });
 }
 
-/** Ringkasan finance: total tagihan, dibayar, hutang, dan jumlah transaksi lewat deadline. */
+/** Ringkasan finance: total tagihan, dibayar, hutang (gabungan semua acara),
+ *  dan jumlah transaksi lewat deadline — plus breakdown per acara (wedding/sanjit). */
 export async function getFinanceSummary() {
   const transactions = await getTransactions();
   const totalTagihan = transactions.reduce((s, t) => s + t.totalHarga, 0);
@@ -144,11 +147,26 @@ export async function getFinanceSummary() {
     (t) => !t.lunas && t.deadline && t.deadline.getTime() < now.getTime()
   ).length;
 
+  const perAcara: Record<
+    string,
+    { totalTagihan: number; totalDibayar: number; totalHutang: number; jumlahTransaksi: number }
+  > = {};
+  for (const acara of ACARA_TRANSAKSI) {
+    const list = transactions.filter((t) => t.acara === acara);
+    perAcara[acara] = {
+      totalTagihan: list.reduce((s, t) => s + t.totalHarga, 0),
+      totalDibayar: list.reduce((s, t) => s + t.totalDibayar, 0),
+      totalHutang: list.reduce((s, t) => s + t.sisaHutang, 0),
+      jumlahTransaksi: list.length,
+    };
+  }
+
   return {
     totalTagihan,
     totalDibayar,
     totalHutang,
     jumlahTransaksi: transactions.length,
     jumlahLewatDeadline,
+    perAcara,
   };
 }

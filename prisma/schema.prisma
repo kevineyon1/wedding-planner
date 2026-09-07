@@ -48,6 +48,7 @@ model Payment {
 /// Transaksi finansial — independen dari katalog Vendor, kategori & nama diisi langsung.
 model Transaction {
   id         Int                  @id @default(autoincrement())
+  acara      String               @default("wedding") // wedding | sanjit
   kategori   String // dari daftar KATEGORI_VENDOR, atau "Lainnya"
   namaVendor String // nama vendor/penerima, diketik bebas
   totalHarga Int                  @default(0)

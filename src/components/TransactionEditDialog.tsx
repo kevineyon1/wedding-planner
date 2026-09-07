@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateTransaction } from "@/app/actions/transaction";
-import { KATEGORI_VENDOR } from "@/lib/constants";
+import { KATEGORI_VENDOR, ACARA_TRANSAKSI, LABEL_ACARA } from "@/lib/constants";
 import type { TransactionRow } from "@/lib/queries";
 
 function toDateInputValue(d: Date | string | null): string {
@@ -54,6 +54,23 @@ export function TransactionEditDialog({ transaction: t }: { transaction: Transac
 
             <form action={handleAction} className="space-y-3">
               <input type="hidden" name="id" value={t.id} />
+
+              <div>
+                <label className="label">Acara *</label>
+                <div className="flex gap-4 text-sm">
+                  {ACARA_TRANSAKSI.map((a) => (
+                    <label key={a} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="acara"
+                        value={a}
+                        defaultChecked={t.acara === a}
+                      />
+                      {LABEL_ACARA[a]}
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <div>
                 <label className="label">Kategori *</label>

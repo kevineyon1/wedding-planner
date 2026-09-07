@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createTransaction } from "@/app/actions/transaction";
-import { KATEGORI_VENDOR } from "@/lib/constants";
+import { KATEGORI_VENDOR, ACARA_TRANSAKSI, LABEL_ACARA } from "@/lib/constants";
 
 export function TransactionFormDialog() {
   const [open, setOpen] = useState(false);
@@ -43,6 +43,23 @@ export function TransactionFormDialog() {
             </div>
 
             <form action={handleAction} className="space-y-3">
+              <div>
+                <label className="label">Acara *</label>
+                <div className="flex gap-4 text-sm">
+                  {ACARA_TRANSAKSI.map((a, i) => (
+                    <label key={a} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="acara"
+                        value={a}
+                        defaultChecked={i === 0}
+                      />
+                      {LABEL_ACARA[a]}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="label">Kategori *</label>

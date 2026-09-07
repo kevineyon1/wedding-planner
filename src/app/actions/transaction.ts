@@ -3,6 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/require-auth";
+import { ACARA_TRANSAKSI } from "@/lib/constants";
+
+function parseAcara(raw: FormDataEntryValue | null): string {
+  const v = String(raw ?? "");
+  return (ACARA_TRANSAKSI as readonly string[]).includes(v) ? v : "wedding";
+}
 
 function parseRupiah(raw: FormDataEntryValue | null): number {
   if (!raw) return 0;
@@ -35,6 +41,7 @@ export async function createTransaction(formData: FormData) {
 
   await prisma.transaction.create({
     data: {
+      acara: parseAcara(formData.get("acara")),
       kategori,
       namaVendor,
       totalHarga,
@@ -72,7 +79,14 @@ export async function updateTransaction(formData: FormData) {
 
   await prisma.transaction.update({
     where: { id },
-    data: { kategori, namaVendor, totalHarga, deadline, catatan },
+    data: {
+      acara: parseAcara(formData.get("acara")),
+      kategori,
+      namaVendor,
+      totalHarga,
+      deadline,
+      catatan,
+    },
   });
 
   revalidatePath("/finance");

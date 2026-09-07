@@ -47,3 +47,12 @@ export const LABEL_STATUS_TODO: Record<string, string> = {
 };
 
 export const KATEGORI_TAMU = ["Keluarga", "Teman", "Kolega", "Tetangga", "Lainnya"] as const;
+
+/** Acara transaksi finance: pernikahan utama vs sanjit (seserahan/gift exchange) */
+export const ACARA_TRANSAKSI = ["wedding", "sanjit"] as const;
+export type AcaraTransaksi = (typeof ACARA_TRANSAKSI)[number];
+
+export const LABEL_ACARA: Record<string, string> = {
+  wedding: "Wedding",
+  sanjit: "Sanjit",
+};
