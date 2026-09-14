@@ -23,6 +23,13 @@ function onlyDigits(v: string): number {
   return d ? parseInt(d, 10) : 0;
 }
 
+/** Tentukan label jenis pembayaran otomatis dari konteksnya. */
+function inferJenis(dibayarSebelum: number, jumlahBaru: number, total: number): string {
+  if (dibayarSebelum <= 0) return "dp";
+  if (dibayarSebelum + jumlahBaru >= total && total > 0) return "pelunasan";
+  return "cicilan";
+}
+
 export function ChecklistItemCard({
   item,
   acara,
@@ -36,17 +43,20 @@ export function ChecklistItemCard({
   const [totalHarga, setTotalHarga] = useState(
     t?.totalHarga ? String(t.totalHarga) : ""
   );
+  const [bayar, setBayar] = useState("");
   const [showDetail, setShowDetail] = useState(false);
-  const [bayarJumlah, setBayarJumlah] = useState("");
-  const [bayarJenis, setBayarJenis] = useState("dp");
+  const [bayarManual, setBayarManual] = useState("");
+  const [bayarManualJenis, setBayarManualJenis] = useState("dp");
   const [isPending, startTransition] = useTransition();
 
   const dibayar = t?.totalDibayar ?? 0;
   const hargaNum = onlyDigits(totalHarga);
-  const sisa = Math.max(0, hargaNum - dibayar);
+  const bayarNum = onlyDigits(bayar);
+  // Sisa langsung menghitung mundur nominal "Bayar" yg baru diketik, sebelum disimpan
+  const sisa = Math.max(0, hargaNum - dibayar - bayarNum);
   const lunas = hargaNum > 0 && dibayar >= hargaNum;
   const belumDiisi = !t;
-  const kosongTotal = hargaNum === 0 && dibayar === 0;
+  const kosongTotal = hargaNum === 0 && dibayar === 0 && bayarNum === 0;
 
   function handleSave() {
     if (!namaVendor.trim()) {
@@ -59,6 +69,7 @@ export function ChecklistItemCard({
       fd.set("kategori", item);
       fd.set("namaVendor", namaVendor);
       fd.set("totalHarga", totalHarga);
+
       if (t) {
         fd.set("id", String(t.id));
         fd.set(
@@ -67,25 +78,39 @@ export function ChecklistItemCard({
         );
         fd.set("catatan", t.catatan ?? "");
         await updateTransaction(fd);
+
+        // Field "Bayar" di baris utama itu nominal TAMBAHAN, bukan total —
+        // supaya tidak dobel kalau user cuma re-save nama/harga tanpa niat bayar lagi.
+        if (bayarNum > 0) {
+          const pfd = new FormData();
+          pfd.set("transactionId", String(t.id));
+          pfd.set("jumlah", String(bayarNum));
+          pfd.set("jenis", inferJenis(dibayar, bayarNum, hargaNum));
+          await addTransactionPayment(pfd);
+        }
       } else {
+        // Transaksi baru: kalau "Bayar" diisi, langsung dicatat sbg pembayaran pertama (DP)
+        if (bayarNum > 0) fd.set("dp", String(bayarNum));
         await createTransaction(fd);
       }
+
+      setBayar("");
     });
   }
 
   function handleAddPayment() {
     if (!t) return;
-    if (onlyDigits(bayarJumlah) <= 0) {
+    if (onlyDigits(bayarManual) <= 0) {
       alert("Isi nominal pembayaran dulu.");
       return;
     }
     startTransition(async () => {
       const fd = new FormData();
       fd.set("transactionId", String(t.id));
-      fd.set("jumlah", bayarJumlah);
-      fd.set("jenis", bayarJenis);
+      fd.set("jumlah", bayarManual);
+      fd.set("jenis", bayarManualJenis);
       await addTransactionPayment(fd);
-      setBayarJumlah("");
+      setBayarManual("");
     });
   }
 
@@ -107,6 +132,7 @@ export function ChecklistItemCard({
       await deleteTransaction(fd);
       setNamaVendor("");
       setTotalHarga("");
+      setBayar("");
       setShowDetail(false);
     });
   }
@@ -130,13 +156,13 @@ export function ChecklistItemCard({
           </span>
         ) : (
           <span className="badge bg-amber-100 text-amber-700 shrink-0">
-            Sisa {formatRupiah(sisa)}
+            Sisa {formatRupiah(t!.sisaHutang)}
           </span>
         )}
       </div>
 
-      {/* Baris 2: input — grid seragam (4 kolom tetap) supaya rata di semua baris */}
-      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_150px_150px_auto] gap-2">
+      {/* Baris 2: input — grid seragam (5 kolom tetap) supaya rata di semua baris */}
+      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_120px_120px_120px_auto] gap-2">
         <input
           value={namaVendor}
           onChange={(e) => setNamaVendor(e.target.value)}
@@ -151,6 +177,15 @@ export function ChecklistItemCard({
           className="input py-1.5 text-sm"
           placeholder="Total biaya"
           aria-label={`Total biaya ${item}`}
+        />
+        <input
+          value={bayar}
+          onChange={(e) => setBayar(e.target.value)}
+          inputMode="numeric"
+          className="input py-1.5 text-sm"
+          placeholder="Bayar"
+          aria-label={`Tambah bayar ${item}`}
+          title="Nominal pembayaran baru yang mau ditambahkan"
         />
         <div
           className={`rounded-lg border px-3 py-1.5 text-sm flex items-center justify-between gap-1 ${
@@ -177,98 +212,103 @@ export function ChecklistItemCard({
         </button>
       </div>
 
-      {/* Baris 3: dibayar + toggle riwayat */}
+      {/* Baris 3: dibayar (kumulatif) + toggle riwayat */}
       {!belumDiisi && (
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 mt-2 text-xs">
           <span className="text-muted">
-            Dibayar <b className="text-emerald-600">{formatRupiah(dibayar)}</b>
+            Sudah dibayar{" "}
+            <b className="text-emerald-600">{formatRupiah(dibayar)}</b>
           </span>
-          <button
-            type="button"
-            onClick={() => setShowDetail((s) => !s)}
-            className="text-primary hover:underline shrink-0"
-          >
-            {showDetail ? "▲ Tutup" : "▼ Bayar / riwayat"}
-          </button>
+          {t!.payments.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowDetail((s) => !s)}
+              className="text-primary hover:underline shrink-0"
+            >
+              {showDetail ? "▲ Tutup" : `▼ Riwayat (${t!.payments.length})`}
+            </button>
+          )}
         </div>
       )}
 
-      {/* Detail: catat pembayaran + riwayat */}
+      {/* Detail: riwayat pembayaran + form manual (opsional, utk jenis khusus) */}
       {!belumDiisi && showDetail && (
-        <div className="mt-3 pt-3 border-t border-border space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_140px_auto] gap-2">
-            <input
-              value={bayarJumlah}
-              onChange={(e) => setBayarJumlah(e.target.value)}
-              inputMode="numeric"
-              className="input py-1.5 text-sm"
-              placeholder={`Nominal bayar (sisa ${formatRupiah(sisa)})`}
-              aria-label={`Nominal pembayaran ${item}`}
-            />
-            <select
-              value={bayarJenis}
-              onChange={(e) => setBayarJenis(e.target.value)}
-              className="input py-1.5 text-sm"
-              aria-label={`Jenis pembayaran ${item}`}
+        <div className="mt-3 pt-3 border-t border-border space-y-1.5">
+          {t!.payments.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-2 text-xs bg-primary-soft/30 rounded-lg px-2.5 py-1.5"
             >
-              <option value="dp">DP</option>
-              <option value="cicilan">Cicilan</option>
-              <option value="pelunasan">Pelunasan</option>
-              <option value="lainnya">Lainnya</option>
-            </select>
-            <button
-              type="button"
-              onClick={handleAddPayment}
-              disabled={isPending}
-              className="btn-ghost py-1.5 text-sm disabled:opacity-50"
-            >
-              Catat
-            </button>
-          </div>
-
-          {t!.payments.length > 0 && (
-            <div className="space-y-1.5">
-              {t!.payments.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between gap-2 text-xs bg-primary-soft/30 rounded-lg px-2.5 py-1.5"
-                >
-                  <span className="min-w-0">
-                    <span className="badge bg-primary-soft text-primary mr-1.5">
-                      {JENIS_LABEL[p.jenis] ?? p.jenis}
-                    </span>
-                    {formatRupiah(p.jumlah)}
-                    {p.tanggalBayar && (
-                      <span className="text-muted">
-                        {" "}
-                        · {formatTanggal(p.tanggalBayar)}
-                      </span>
-                    )}
+              <span className="min-w-0">
+                <span className="badge bg-primary-soft text-primary mr-1.5">
+                  {JENIS_LABEL[p.jenis] ?? p.jenis}
+                </span>
+                {formatRupiah(p.jumlah)}
+                {p.tanggalBayar && (
+                  <span className="text-muted">
+                    {" "}
+                    · {formatTanggal(p.tanggalBayar)}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePayment(p.id)}
-                    disabled={isPending}
-                    className="text-red-500 hover:text-red-700 shrink-0"
-                    aria-label="Hapus pembayaran"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleDeletePayment(p.id)}
+                disabled={isPending}
+                className="text-red-500 hover:text-red-700 shrink-0"
+                aria-label="Hapus pembayaran"
+              >
+                ×
+              </button>
             </div>
-          )}
+          ))}
+        </div>
+      )}
 
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleReset}
-              disabled={isPending}
-              className="text-xs text-red-600 hover:underline disabled:opacity-50"
-            >
-              Kosongkan item ini
-            </button>
-          </div>
+      {!belumDiisi && (
+        <div className="flex items-center justify-between gap-2 mt-2 text-xs">
+          <details className="group">
+            <summary className="text-muted hover:text-primary cursor-pointer list-none">
+              + Catat manual (pilih jenis)
+            </summary>
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_130px_auto] gap-2 mt-2">
+              <input
+                value={bayarManual}
+                onChange={(e) => setBayarManual(e.target.value)}
+                inputMode="numeric"
+                className="input py-1.5 text-sm"
+                placeholder="Nominal"
+                aria-label={`Nominal pembayaran manual ${item}`}
+              />
+              <select
+                value={bayarManualJenis}
+                onChange={(e) => setBayarManualJenis(e.target.value)}
+                className="input py-1.5 text-sm"
+                aria-label={`Jenis pembayaran manual ${item}`}
+              >
+                <option value="dp">DP</option>
+                <option value="cicilan">Cicilan</option>
+                <option value="pelunasan">Pelunasan</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+              <button
+                type="button"
+                onClick={handleAddPayment}
+                disabled={isPending}
+                className="btn-ghost py-1.5 text-sm disabled:opacity-50"
+              >
+                Catat
+              </button>
+            </div>
+          </details>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isPending}
+            className="text-red-600 hover:underline disabled:opacity-50 shrink-0"
+          >
+            Kosongkan
+          </button>
         </div>
       )}
     </div>
