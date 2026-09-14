@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { getFinanceSummary, getTransactions } from "@/lib/queries";
+import {
+  getFinanceSummary,
+  getTransactions,
+  getTransactionsByItem,
+} from "@/lib/queries";
 import { formatRupiah } from "@/lib/format";
 import { TransactionFormDialog } from "@/components/TransactionFormDialog";
 import { FinanceTable } from "@/components/FinanceTable";
-import { ACARA_TRANSAKSI, LABEL_ACARA } from "@/lib/constants";
+import { ChecklistView } from "@/components/ChecklistView";
+import { ACARA_TRANSAKSI, LABEL_ACARA, checklistItems } from "@/lib/constants";
 
 export default async function FinancePage({
   searchParams,
@@ -20,9 +25,22 @@ export default async function FinancePage({
     getTransactions(),
   ]);
 
-  const transactions = filterAcara
+  // Acara yang punya template checklist ditampilkan sbg checklist, bukan tabel biasa
+  const itemTemplate = filterAcara ? checklistItems(filterAcara) : [];
+  const pakaiChecklist = itemTemplate.length > 0;
+  const byItem = pakaiChecklist
+    ? await getTransactionsByItem(filterAcara!)
+    : {};
+
+  const transaksiAcara = filterAcara
     ? allTransactions.filter((t) => t.acara === filterAcara)
     : allTransactions;
+
+  // Transaksi acara ini yg TIDAK ada di template checklist — tetap ditampilkan
+  // supaya entri bebas (dari tombol + Tambah Transaksi) tidak tersembunyi.
+  const diLuarChecklist = pakaiChecklist
+    ? transaksiAcara.filter((t) => !itemTemplate.includes(t.kategori))
+    : [];
 
   return (
     <div>
@@ -30,8 +48,7 @@ export default async function FinancePage({
         <div>
           <h1 className="text-2xl font-semibold">Finance</h1>
           <p className="text-sm text-muted">
-            Catat transaksi, DP, cicilan, dan hutang per vendor — Wedding &amp;
-            Sanjit.
+            Catat biaya, pembayaran, dan sisa hutang — Wedding &amp; Sanjit.
           </p>
         </div>
         <TransactionFormDialog />
@@ -128,7 +145,29 @@ export default async function FinancePage({
         ))}
       </div>
 
-      <FinanceTable transactions={transactions} />
+      {pakaiChecklist ? (
+        <>
+          <ChecklistView acara={filterAcara!} byItem={byItem} />
+          {diLuarChecklist.length > 0 && (
+            <section className="mt-6">
+              <h2 className="text-sm font-semibold mb-2 px-1">
+                Di Luar Checklist
+              </h2>
+              <FinanceTable transactions={diLuarChecklist} />
+            </section>
+          )}
+        </>
+      ) : (
+        <>
+          {filterAcara && (
+            <div className="card p-3 mb-4 bg-amber-50 border-amber-200 text-amber-800 text-xs">
+              Checklist {LABEL_ACARA[filterAcara]} belum diisi daftarnya —
+              sementara pakai daftar transaksi biasa di bawah.
+            </div>
+          )}
+          <FinanceTable transactions={transaksiAcara} />
+        </>
+      )}
     </div>
   );
 }

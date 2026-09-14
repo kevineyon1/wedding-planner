@@ -56,3 +56,56 @@ export const LABEL_ACARA: Record<string, string> = {
   wedding: "Wedding",
   sanjit: "Sanjit",
 };
+
+/** Satu grup item checklist biaya dalam sebuah acara. */
+export type ChecklistGrup = { grup: string; items: string[] };
+
+/** Checklist biaya Sanjit — dipakai sbg daftar tetap supaya tidak ada pos yang kelewat.
+ *  Nama item di sini disimpan apa adanya ke Transaction.kategori. */
+export const CHECKLIST_SANJIT: ChecklistGrup[] = [
+  { grup: "Vendor Utama", items: ["Venue", "WO", "MC"] },
+  {
+    grup: "Makeup",
+    items: [
+      "Makeup Wanita",
+      "Makeup Pria",
+      "Makeup Mamah (Wanita)",
+      "Makeup Papah (Wanita)",
+      "Makeup Mamah (Pria)",
+      "Makeup Papah (Pria)",
+    ],
+  },
+  {
+    grup: "Baju Sanjit",
+    items: [
+      "Baju Sanjit Wanita",
+      "Baju Sanjit Pria",
+      "Baju Sanjit Mamah (Wanita)",
+      "Baju Sanjit Papah (Wanita)",
+      "Baju Sanjit Mamah (Pria)",
+      "Baju Sanjit Papah (Pria)",
+    ],
+  },
+  {
+    grup: "Dekorasi & Dokumentasi",
+    items: [
+      "Bakie (Isi + Desain)",
+      "Decor Sanjit",
+      "Souvenir Sanjit",
+      "Photographer",
+      "Videographer",
+    ],
+  },
+  { grup: "Lainnya", items: ["WCC", "Seserahan Pria", "Seserahan Wanita"] },
+];
+
+/** Checklist per acara. Wedding masih kosong — daftarnya menyusul dari user. */
+export const CHECKLIST_ACARA: Record<string, ChecklistGrup[]> = {
+  sanjit: CHECKLIST_SANJIT,
+  wedding: [],
+};
+
+/** Semua nama item checklist sebuah acara (flat), utk hitung progres/pencocokan. */
+export function checklistItems(acara: string): string[] {
+  return (CHECKLIST_ACARA[acara] ?? []).flatMap((g) => g.items);
+}

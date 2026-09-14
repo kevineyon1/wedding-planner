@@ -134,6 +134,19 @@ export async function getTransactions(): Promise<TransactionRow[]> {
   });
 }
 
+/** Transaksi sebuah acara, dipetakan berdasarkan nama item (kategori),
+ *  supaya checklist bisa langsung mencocokkan tiap baris dgn datanya. */
+export async function getTransactionsByItem(
+  acara: string
+): Promise<Record<string, TransactionRow>> {
+  const all = await getTransactions();
+  const map: Record<string, TransactionRow> = {};
+  for (const t of all) {
+    if (t.acara === acara) map[t.kategori] = t;
+  }
+  return map;
+}
+
 /** Ringkasan finance: total tagihan, dibayar, hutang (gabungan semua acara),
  *  dan jumlah transaksi lewat deadline — plus breakdown per acara (wedding/sanjit). */
 export async function getFinanceSummary() {
