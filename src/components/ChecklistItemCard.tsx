@@ -23,6 +23,12 @@ function onlyDigits(v: string): number {
   return d ? parseInt(d, 10) : 0;
 }
 
+/** Format input angka jadi "3.000.000" (titik ribuan) saat diketik, biar enak dibaca. */
+function formatThousands(v: string): string {
+  const n = onlyDigits(v);
+  return n ? n.toLocaleString("id-ID") : "";
+}
+
 /** Tentukan label jenis pembayaran otomatis dari konteksnya. */
 function inferJenis(dibayarSebelum: number, jumlahBaru: number, total: number): string {
   if (dibayarSebelum <= 0) return "dp";
@@ -41,7 +47,7 @@ export function ChecklistItemCard({
 }) {
   const [namaVendor, setNamaVendor] = useState(t?.namaVendor ?? "");
   const [totalHarga, setTotalHarga] = useState(
-    t?.totalHarga ? String(t.totalHarga) : ""
+    t?.totalHarga ? t.totalHarga.toLocaleString("id-ID") : ""
   );
   const [bayar, setBayar] = useState("");
   const [showDetail, setShowDetail] = useState(false);
@@ -161,8 +167,9 @@ export function ChecklistItemCard({
         )}
       </div>
 
-      {/* Baris 2: input — grid seragam (5 kolom tetap) supaya rata di semua baris */}
-      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_120px_120px_120px_auto] gap-2">
+      {/* Baris 2: input — grid seragam (5 kolom tetap) supaya rata di semua baris.
+          Kolom Sisa dilebihkan lebarnya krn nominalnya bisa panjang (mis. "Rp 11.700.000"). */}
+      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_115px_115px_150px_auto] gap-2">
         <input
           value={namaVendor}
           onChange={(e) => setNamaVendor(e.target.value)}
@@ -172,7 +179,7 @@ export function ChecklistItemCard({
         />
         <input
           value={totalHarga}
-          onChange={(e) => setTotalHarga(e.target.value)}
+          onChange={(e) => setTotalHarga(formatThousands(e.target.value))}
           inputMode="numeric"
           className="input py-1.5 text-sm"
           placeholder="Total biaya"
@@ -180,7 +187,7 @@ export function ChecklistItemCard({
         />
         <input
           value={bayar}
-          onChange={(e) => setBayar(e.target.value)}
+          onChange={(e) => setBayar(formatThousands(e.target.value))}
           inputMode="numeric"
           className="input py-1.5 text-sm"
           placeholder="Bayar"
@@ -188,7 +195,7 @@ export function ChecklistItemCard({
           title="Nominal pembayaran baru yang mau ditambahkan"
         />
         <div
-          className={`rounded-lg border px-3 py-1.5 text-sm flex items-center justify-between gap-1 ${
+          className={`rounded-lg border px-2.5 py-1 text-sm flex flex-col justify-center leading-tight min-w-0 ${
             kosongTotal
               ? "border-border bg-background/40 text-muted"
               : lunas
@@ -197,7 +204,7 @@ export function ChecklistItemCard({
           }`}
           aria-label={`Sisa ${item}`}
         >
-          <span className="text-[11px] shrink-0 opacity-70">Sisa</span>
+          <span className="text-[10px] opacity-70">Sisa</span>
           <span className="font-medium truncate">
             {kosongTotal ? "-" : formatRupiah(sisa)}
           </span>
@@ -274,7 +281,7 @@ export function ChecklistItemCard({
             <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_130px_auto] gap-2 mt-2">
               <input
                 value={bayarManual}
-                onChange={(e) => setBayarManual(e.target.value)}
+                onChange={(e) => setBayarManual(formatThousands(e.target.value))}
                 inputMode="numeric"
                 className="input py-1.5 text-sm"
                 placeholder="Nominal"
