@@ -162,7 +162,7 @@ export function ChecklistItemCard({
           </span>
         ) : (
           <span className="badge bg-amber-100 text-amber-700 shrink-0">
-            Sisa {formatRupiah(t!.sisaHutang)}
+            Belum lunas
           </span>
         )}
       </div>
