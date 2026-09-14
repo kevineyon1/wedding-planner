@@ -46,6 +46,7 @@ export function ChecklistItemCard({
   const sisa = Math.max(0, hargaNum - dibayar);
   const lunas = hargaNum > 0 && dibayar >= hargaNum;
   const belumDiisi = !t;
+  const kosongTotal = hargaNum === 0 && dibayar === 0;
 
   function handleSave() {
     if (!namaVendor.trim()) {
@@ -134,12 +135,12 @@ export function ChecklistItemCard({
         )}
       </div>
 
-      {/* Baris 2: input — grid seragam supaya rata di semua baris */}
-      <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_170px_auto] gap-2">
+      {/* Baris 2: input — grid seragam (4 kolom tetap) supaya rata di semua baris */}
+      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_150px_150px_auto] gap-2">
         <input
           value={namaVendor}
           onChange={(e) => setNamaVendor(e.target.value)}
-          className="input py-1.5 text-sm"
+          className="input py-1.5 text-sm col-span-2 sm:col-span-1"
           placeholder="Nama vendor"
           aria-label={`Nama vendor ${item}`}
         />
@@ -151,33 +152,37 @@ export function ChecklistItemCard({
           placeholder="Total biaya"
           aria-label={`Total biaya ${item}`}
         />
+        <div
+          className={`rounded-lg border px-3 py-1.5 text-sm flex items-center justify-between gap-1 ${
+            kosongTotal
+              ? "border-border bg-background/40 text-muted"
+              : lunas
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : "border-amber-200 bg-amber-50 text-amber-700"
+          }`}
+          aria-label={`Sisa ${item}`}
+        >
+          <span className="text-[11px] shrink-0 opacity-70">Sisa</span>
+          <span className="font-medium truncate">
+            {kosongTotal ? "-" : formatRupiah(sisa)}
+          </span>
+        </div>
         <button
           type="button"
           onClick={handleSave}
           disabled={isPending}
-          className="btn-primary py-1.5 text-sm disabled:opacity-50"
+          className="btn-primary py-1.5 text-sm disabled:opacity-50 col-span-2 sm:col-span-1"
         >
           {isPending ? "..." : "Simpan"}
         </button>
       </div>
 
-      {/* Baris 3: ringkasan angka + toggle detail */}
+      {/* Baris 3: dibayar + toggle riwayat */}
       {!belumDiisi && (
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 mt-2 text-xs">
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span className="text-muted">
-              Biaya <b className="text-foreground">{formatRupiah(hargaNum)}</b>
-            </span>
-            <span className="text-muted">
-              Dibayar <b className="text-emerald-600">{formatRupiah(dibayar)}</b>
-            </span>
-            <span className="text-muted">
-              Sisa{" "}
-              <b className={lunas ? "text-emerald-600" : "text-amber-600"}>
-                {formatRupiah(sisa)}
-              </b>
-            </span>
-          </div>
+          <span className="text-muted">
+            Dibayar <b className="text-emerald-600">{formatRupiah(dibayar)}</b>
+          </span>
           <button
             type="button"
             onClick={() => setShowDetail((s) => !s)}
