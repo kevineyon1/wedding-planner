@@ -49,7 +49,7 @@ export function ChecklistItemCard({
   const [namaVendor, setNamaVendor] = useState(t?.namaVendor ?? "");
   const [qty, setQty] = useState(String(t?.qty ?? 1));
   const [totalHarga, setTotalHarga] = useState(
-    t?.totalHarga ? t.totalHarga.toLocaleString("id-ID") : ""
+    t ? t.totalHarga.toLocaleString("id-ID") : ""
   );
   const [bayar, setBayar] = useState("");
   const [sumber, setSumber] = useState("tabungan");
@@ -65,9 +65,10 @@ export function ChecklistItemCard({
   const qtyNum = Math.max(1, onlyDigits(qty));
   // Sisa langsung menghitung mundur nominal "Bayar" yg baru diketik, sebelum disimpan
   const sisa = Math.max(0, hargaNum - dibayar - bayarNum);
-  const lunas = hargaNum > 0 && dibayar >= hargaNum;
   const belumDiisi = !t;
-  const kosongTotal = hargaNum === 0 && dibayar === 0 && bayarNum === 0;
+  const termasukPaket = !!t && t.totalHarga === 0 && hargaNum === 0;
+  const lunas = termasukPaket || (hargaNum > 0 && dibayar >= hargaNum);
+  const kosongTotal = !termasukPaket && hargaNum === 0 && dibayar === 0 && bayarNum === 0;
 
   function handleSave() {
     if (!namaVendor.trim()) {
@@ -168,6 +169,10 @@ export function ChecklistItemCard({
           <span className="badge bg-gray-100 text-gray-500 shrink-0">
             Belum diisi
           </span>
+        ) : termasukPaket ? (
+          <span className="badge bg-emerald-100 text-emerald-700 shrink-0">
+            📦 Termasuk paket
+          </span>
         ) : lunas ? (
           <span className="badge bg-emerald-100 text-emerald-700 shrink-0">
             ✅ Lunas
@@ -205,10 +210,13 @@ export function ChecklistItemCard({
         </div>
         <input
           value={totalHarga}
-          onChange={(e) => setTotalHarga(formatThousands(e.target.value))}
+          onChange={(e) =>
+            setTotalHarga(/^\s*0+\s*$/.test(e.target.value) ? "0" : formatThousands(e.target.value))
+          }
           inputMode="numeric"
           className="input py-1.5 text-sm"
           placeholder="Total biaya"
+          title="Isi 0 kalau sudah termasuk paket (dianggap lunas)"
           aria-label={`Total biaya ${item}`}
         />
         <input

@@ -108,7 +108,8 @@ export async function getTransactions(): Promise<TransactionRow[]> {
       totalHarga: t.totalHarga,
       totalDibayar,
       sisaHutang: Math.max(0, t.totalHarga - totalDibayar),
-      lunas: t.totalHarga > 0 && totalDibayar >= t.totalHarga,
+      // Total 0 = sudah termasuk paket vendor lain (mis. WO all-in), dianggap lunas.
+      lunas: totalDibayar >= t.totalHarga,
       deadline: t.deadline,
       catatan: t.catatan,
       payments: t.payments.map((p) => ({
