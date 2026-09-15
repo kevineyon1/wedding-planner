@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     getFinanceSummary(),
   ]);
 
-  const saldo = tabungan.total - finance.totalDibayar;
+  const selisih = tabungan.total - finance.totalHutang;
 
   const sisaHari = hariMenuju(setting.tanggalHariH);
   const namaPasangan =
@@ -65,16 +65,17 @@ export default async function DashboardPage() {
             <h2 className="font-semibold">💰 Tabungan</h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
+          <p className="text-2xl font-semibold text-primary">
+            {formatRupiah(tabungan.total)}
+          </p>
           <p
-            className={`text-2xl font-semibold ${
-              saldo < 0 ? "text-red-600" : "text-primary"
+            className={`text-xs mt-1 ${
+              selisih < 0 ? "text-red-600" : "text-emerald-600"
             }`}
           >
-            {formatRupiah(saldo)}
-          </p>
-          <p className="text-xs text-muted mt-1">
-            dari total setoran {formatRupiah(tabungan.total)} − beban{" "}
-            {formatRupiah(finance.totalDibayar)}
+            {selisih < 0
+              ? `Kurang ${formatRupiah(-selisih)} untuk lunasi hutang`
+              : `Cukup lunasi hutang, lebih ${formatRupiah(selisih)}`}
           </p>
         </Link>
 

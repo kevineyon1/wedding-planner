@@ -11,9 +11,10 @@ export default async function TabunganPage() {
     getSetting(),
   ]);
 
-  const beban = finance.totalDibayar; // uang yg sudah benar2 keluar, sesuai tanggal bayar di Finance
-  const saldo = tabungan.total - beban;
-  const defisit = saldo < 0;
+  // Pembayaran yg sudah terjadi tidak memakai tabungan ini, jadi tabungan dibandingkan dgn sisa hutang saja.
+  const sisaHutang = finance.totalHutang;
+  const selisih = tabungan.total - sisaHutang;
+  const kurang = selisih < 0;
 
   const totalAnggaran = setting.totalAnggaran;
   const persenTarget =
@@ -24,7 +25,7 @@ export default async function TabunganPage() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">Tabungan</h1>
         <p className="text-sm text-muted">
-          Aset tabungan vs beban pengeluaran — beban ditarik otomatis dari{" "}
+          Tabungan untuk melunasi sisa hutang — sisa hutang ditarik otomatis dari{" "}
           <Link href="/finance" className="text-primary underline">
             halaman Finance
           </Link>
@@ -32,45 +33,44 @@ export default async function TabunganPage() {
         </p>
       </header>
 
-      {/* Kartu utama: Saldo = uang yg benar-benar masih ada, sudah dikurangi beban */}
       <div className="card p-5 mb-3 bg-primary-soft/40 border-primary/20">
-        <p className="text-xs text-muted">
-          Saldo Tabungan{" "}
-          <span className="text-muted/70">(sudah dikurangi beban yang dibayar)</span>
+        <p className="text-xs text-muted">Saldo Tabungan</p>
+        <p className="text-3xl font-bold mt-1 text-primary">
+          {formatRupiah(tabungan.total)}
         </p>
-        <p
-          className={`text-3xl font-bold mt-1 ${
-            defisit ? "text-red-600" : "text-primary"
-          }`}
-        >
-          {formatRupiah(saldo)}
-        </p>
+        <p className="text-xs text-muted mt-0.5">total yang sudah ditabung</p>
       </div>
 
-      {/* Rincian pendukung: dari mana saldo itu berasal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         <div className="card p-4">
-          <p className="text-xs text-muted">Total Setoran Tabungan</p>
-          <p className="text-lg font-semibold mt-1">
-            {formatRupiah(tabungan.total)}
-          </p>
-          <p className="text-xs text-muted mt-0.5">total yang pernah ditabung</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs text-muted">Total Beban (dari Finance)</p>
+          <p className="text-xs text-muted">Sisa Hutang (dari Finance)</p>
           <p className="text-lg font-semibold mt-1 text-amber-600">
-            {formatRupiah(beban)}
+            {formatRupiah(sisaHutang)}
           </p>
-          <p className="text-xs text-muted mt-0.5">total yang sudah dibayar</p>
+          <p className="text-xs text-muted mt-0.5">
+            belum dibayar · sudah dibayar {formatRupiah(finance.totalDibayar)}
+          </p>
+        </div>
+        <div
+          className={`card p-4 ${
+            kurang ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"
+          }`}
+        >
+          <p className="text-xs text-muted">
+            {kurang ? "Tabungan Kurang" : "Tabungan Lebih"}
+          </p>
+          <p
+            className={`text-lg font-semibold mt-1 ${
+              kurang ? "text-red-600" : "text-emerald-600"
+            }`}
+          >
+            {formatRupiah(Math.abs(selisih))}
+          </p>
+          <p className="text-xs text-muted mt-0.5">
+            {kurang ? "lagi untuk melunasi semua hutang" : "setelah semua hutang lunas"}
+          </p>
         </div>
       </div>
-
-      {defisit && (
-        <div className="card p-3 mb-6 bg-red-50 border-red-200 text-red-700 text-sm">
-          ⚠️ Beban sudah melebihi tabungan yang ada — sisa hutang{" "}
-          {formatRupiah(Math.abs(saldo))} belum ada dananya.
-        </div>
-      )}
 
       {/* Progres vs target anggaran (opsional, kalau sudah diatur) */}
       {totalAnggaran > 0 && (
@@ -97,9 +97,8 @@ export default async function TabunganPage() {
         </div>
       )}
 
-      {/* Beban per acara — ditarik dari Finance */}
       <section className="mb-6">
-        <h2 className="font-semibold mb-2">Beban per Acara</h2>
+        <h2 className="font-semibold mb-2">Sisa Hutang per Acara</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {ACARA_TRANSAKSI.map((a) => {
             const s = finance.perAcara[a];
@@ -115,10 +114,10 @@ export default async function TabunganPage() {
                   </Link>
                 </div>
                 <p className="text-lg font-semibold text-amber-600">
-                  {formatRupiah(s.totalDibayar)}
+                  {formatRupiah(s.totalHutang)}
                 </p>
                 <p className="text-xs text-muted">
-                  sudah dibayar dari total {formatRupiah(s.totalTagihan)}
+                  belum dibayar dari total {formatRupiah(s.totalTagihan)}
                 </p>
               </div>
             );
