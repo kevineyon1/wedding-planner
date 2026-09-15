@@ -5,7 +5,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
-  title: "Kevin Wedding Planner",
+  title: "Wedding Plan",
   description: "Persiapan pernikahan — vendor, budget, tamu, dan to-do.",
 };
 

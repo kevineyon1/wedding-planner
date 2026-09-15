@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 
@@ -19,12 +20,15 @@ export function Nav() {
 
   return (
     <nav className="md:w-60 md:min-h-screen bg-card border-b md:border-b-0 md:border-r border-border px-3 py-4 md:py-6 shrink-0">
-      <div className="px-2 mb-4 md:mb-6">
-        <p className="text-lg font-semibold text-primary leading-tight">
-          Wedding Planner 💍
-        </p>
-        <p className="text-xs text-muted">Persiapan pernikahan</p>
-      </div>
+      <Link href="/" className="flex items-center gap-2.5 px-2 mb-4 md:mb-6">
+        <Image src="/logo-mark.png" alt="" width={44} height={44} priority />
+        <div>
+          <p className="text-base font-semibold text-primary leading-tight tracking-wide">
+            Wedding Plan
+          </p>
+          <p className="text-xs text-muted">Persiapan pernikahan</p>
+        </div>
+      </Link>
       <ul className="flex md:flex-col gap-1 overflow-x-auto">
         {links.map((l) => {
           const active =

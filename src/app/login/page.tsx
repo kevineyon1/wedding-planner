@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { login } from "@/app/actions/auth";
 
 export default async function LoginPage({
@@ -12,8 +13,15 @@ export default async function LoginPage({
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="card w-full max-w-sm p-6">
         <div className="text-center mb-6">
-          <p className="text-2xl font-semibold text-primary">Wedding Planner 💍</p>
-          <p className="text-sm text-muted mt-1">Masuk untuk melanjutkan</p>
+          <Image
+            src="/logo-full.png"
+            alt="Wedding Plan"
+            width={520}
+            height={403}
+            priority
+            className="mx-auto w-56 h-auto"
+          />
+          <p className="text-sm text-muted mt-3">Masuk untuk melanjutkan</p>
         </div>
 
         {hasError && (
