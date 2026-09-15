@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   getSetting,
-  getBudgetSummary,
+  getTabunganSummary,
   getTodoSummary,
   getGuestSummary,
   getFinanceSummary,
@@ -9,13 +9,15 @@ import {
 import { formatRupiah, formatTanggal, hariMenuju } from "@/lib/format";
 
 export default async function DashboardPage() {
-  const [setting, budget, todo, guest, finance] = await Promise.all([
+  const [setting, tabungan, todo, guest, finance] = await Promise.all([
     getSetting(),
-    getBudgetSummary(),
+    getTabunganSummary(),
     getTodoSummary(),
     getGuestSummary(),
     getFinanceSummary(),
   ]);
+
+  const saldo = tabungan.total - finance.totalDibayar;
 
   const sisaHari = hariMenuju(setting.tanggalHariH);
   const namaPasangan =
@@ -57,30 +59,24 @@ export default async function DashboardPage() {
 
       {/* Ringkasan */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Budget */}
+        {/* Tabungan */}
         <Link href="/budget" className="card p-5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold">💰 Budget</h2>
+            <h2 className="font-semibold">💰 Tabungan</h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
           <p className="text-2xl font-semibold text-primary">
-            {formatRupiah(budget.totalBiaya)}
+            {formatRupiah(tabungan.total)}
           </p>
           <p className="text-xs text-muted">
-            dari anggaran {formatRupiah(budget.totalAnggaran)}
+            beban (sudah dibayar): {formatRupiah(finance.totalDibayar)}
           </p>
-          <div className="h-2 rounded-full bg-primary-soft overflow-hidden mt-3">
-            <div
-              className={`h-full ${budget.isOverBudget ? "bg-red-500" : "bg-primary"}`}
-              style={{ width: `${Math.min(100, budget.persenTerpakai)}%` }}
-            />
-          </div>
           <p
-            className={`text-xs mt-2 ${
-              budget.isOverBudget ? "text-red-600" : "text-emerald-600"
+            className={`text-xs mt-2 font-medium ${
+              saldo < 0 ? "text-red-600" : "text-emerald-600"
             }`}
           >
-            Sisa: {formatRupiah(budget.sisa)}
+            Saldo: {formatRupiah(saldo)}
           </p>
         </Link>
 

@@ -104,6 +104,16 @@ model BudgetCategory {
   alokasiRencana Int   @default(0)
 }
 
+/// Tabungan (aset) — dicatat manual per tanggal nambah, dibandingkan dgn
+/// Beban yang ditarik otomatis dari total sudah dibayar di Finance.
+model Tabungan {
+  id        Int      @id @default(autoincrement())
+  jumlah    Int      @default(0)
+  tanggal   DateTime @default(now())
+  catatan   String?
+  createdAt DateTime @default(now())
+}
+
 /// Pengaturan global (single-row)
 model Setting {
   id             Int      @id @default(1)

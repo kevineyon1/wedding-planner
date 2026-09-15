@@ -1,17 +1,30 @@
 import Link from "next/link";
-import { getBudgetSummary } from "@/lib/queries";
+import { getTabunganSummary, getFinanceSummary, getSetting } from "@/lib/queries";
 import { formatRupiah } from "@/lib/format";
+import { TabunganManager } from "@/components/TabunganManager";
+import { ACARA_TRANSAKSI, LABEL_ACARA } from "@/lib/constants";
 
-export default async function BudgetPage() {
-  const b = await getBudgetSummary();
+export default async function TabunganPage() {
+  const [tabungan, finance, setting] = await Promise.all([
+    getTabunganSummary(),
+    getFinanceSummary(),
+    getSetting(),
+  ]);
+
+  const beban = finance.totalDibayar; // uang yg sudah benar2 keluar, sesuai tanggal bayar di Finance
+  const saldo = tabungan.total - beban;
+  const defisit = saldo < 0;
+
+  const totalAnggaran = setting.totalAnggaran;
+  const persenTarget =
+    totalAnggaran > 0 ? Math.min(100, Math.round((tabungan.total / totalAnggaran) * 100)) : 0;
 
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Budget Tracker</h1>
+        <h1 className="text-2xl font-semibold">Tabungan</h1>
         <p className="text-sm text-muted">
-          Rencana anggaran vs harga riset vendor (Dipilih/Booked).{" "}
-          Untuk catat pembayaran & hutang, lihat{" "}
+          Aset tabungan vs beban pengeluaran — beban ditarik otomatis dari{" "}
           <Link href="/finance" className="text-primary underline">
             halaman Finance
           </Link>
@@ -19,99 +32,95 @@ export default async function BudgetPage() {
         </p>
       </header>
 
-      {b.totalAnggaran === 0 && (
-        <div className="card p-4 mb-6 bg-amber-50 border-amber-200 text-amber-800 text-sm">
-          Total anggaran belum diatur.{" "}
-          <Link href="/pengaturan" className="font-medium underline">
-            Atur di Pengaturan
-          </Link>{" "}
-          agar sisa anggaran bisa dihitung.
-        </div>
-      )}
-
       {/* Kartu ringkasan */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <div className="card p-4">
-          <p className="text-xs text-muted">Total Anggaran</p>
-          <p className="text-xl font-semibold mt-1">
-            {formatRupiah(b.totalAnggaran)}
-          </p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs text-muted">Biaya Vendor Terpilih</p>
+          <p className="text-xs text-muted">Total Tabungan (Aset)</p>
           <p className="text-xl font-semibold mt-1 text-primary">
-            {formatRupiah(b.totalBiaya)}
+            {formatRupiah(tabungan.total)}
           </p>
         </div>
         <div className="card p-4">
-          <p className="text-xs text-muted">Sisa Anggaran</p>
+          <p className="text-xs text-muted">Total Beban (dari Finance)</p>
+          <p className="text-xl font-semibold mt-1 text-amber-600">
+            {formatRupiah(beban)}
+          </p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs text-muted">Saldo</p>
           <p
             className={`text-xl font-semibold mt-1 ${
-              b.isOverBudget ? "text-red-600" : "text-emerald-600"
+              defisit ? "text-red-600" : "text-emerald-600"
             }`}
           >
-            {formatRupiah(b.sisa)}
+            {formatRupiah(saldo)}
           </p>
         </div>
       </div>
 
-      {/* Progress bar */}
-      {b.totalAnggaran > 0 && (
-        <div className="card p-4 mb-6">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted">Terpakai</span>
-            <span
-              className={`font-medium ${
-                b.isOverBudget ? "text-red-600" : "text-foreground"
-              }`}
-            >
-              {b.persenTerpakai}%
-              {b.isOverBudget && " — melebihi anggaran!"}
-            </span>
-          </div>
-          <div className="h-3 rounded-full bg-primary-soft overflow-hidden">
-            <div
-              className={`h-full rounded-full ${
-                b.isOverBudget ? "bg-red-500" : "bg-primary"
-              }`}
-              style={{ width: `${Math.min(100, b.persenTerpakai)}%` }}
-            />
-          </div>
+      {defisit && (
+        <div className="card p-3 mb-6 bg-red-50 border-red-200 text-red-700 text-sm">
+          ⚠️ Beban sudah melebihi tabungan yang ada — sisa hutang{" "}
+          {formatRupiah(Math.abs(saldo))} belum ada dananya.
         </div>
       )}
 
-      {/* Rekap per kategori */}
-      <section>
-        <h2 className="font-semibold mb-2">Biaya per Kategori</h2>
-        {b.perKategori.length === 0 ? (
-          <div className="card p-6 text-center text-muted text-sm">
-            Belum ada vendor berstatus <b>Dipilih</b> atau <b>Booked</b>.{" "}
-            <Link href="/vendor" className="text-primary underline">
-              Kelola vendor
+      {/* Progres vs target anggaran (opsional, kalau sudah diatur) */}
+      {totalAnggaran > 0 && (
+        <div className="card p-4 mb-6">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-muted">
+              Target tabungan: {formatRupiah(totalAnggaran)}
+            </span>
+            <span className="font-medium">{persenTarget}%</span>
+          </div>
+          <div className="h-3 rounded-full bg-primary-soft overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${persenTarget}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted mt-2">
+            Kurang {formatRupiah(Math.max(0, totalAnggaran - tabungan.total))} lagi
+            dari target.{" "}
+            <Link href="/pengaturan" className="text-primary underline">
+              Ubah target
             </Link>
-          </div>
-        ) : (
-          <div className="card divide-y divide-border">
-            {b.perKategori
-              .sort((a, c) => c.total - a.total)
-              .map((row) => (
-                <div
-                  key={row.kategori}
-                  className="flex items-center justify-between px-4 py-3"
-                >
-                  <span className="text-sm">{row.kategori}</span>
-                  <span className="font-medium">{formatRupiah(row.total)}</span>
+          </p>
+        </div>
+      )}
+
+      {/* Beban per acara — ditarik dari Finance */}
+      <section className="mb-6">
+        <h2 className="font-semibold mb-2">Beban per Acara</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {ACARA_TRANSAKSI.map((a) => {
+            const s = finance.perAcara[a];
+            return (
+              <div key={a} className="card p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-semibold">{LABEL_ACARA[a]}</p>
+                  <Link
+                    href={`/finance?acara=${a}`}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    lihat →
+                  </Link>
                 </div>
-              ))}
-            <div className="flex items-center justify-between px-4 py-3 bg-primary-soft/50">
-              <span className="font-semibold">Total</span>
-              <span className="font-semibold text-primary">
-                {formatRupiah(b.totalBiaya)}
-              </span>
-            </div>
-          </div>
-        )}
+                <p className="text-lg font-semibold text-amber-600">
+                  {formatRupiah(s.totalDibayar)}
+                </p>
+                <p className="text-xs text-muted">
+                  sudah dibayar dari total {formatRupiah(s.totalTagihan)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </section>
+
+      {/* Kelola tabungan */}
+      <TabunganManager entries={tabungan.entries} />
     </div>
   );
 }

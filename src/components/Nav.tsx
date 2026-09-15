@@ -7,7 +7,7 @@ import { logout } from "@/app/actions/auth";
 const links = [
   { href: "/", label: "Dashboard", icon: "🏠" },
   { href: "/vendor", label: "Vendor", icon: "🏷️" },
-  { href: "/budget", label: "Budget", icon: "💰" },
+  { href: "/budget", label: "Tabungan", icon: "💰" },
   { href: "/finance", label: "Finance", icon: "🧾" },
   { href: "/todo", label: "To-Do", icon: "✅" },
   { href: "/tamu", label: "Tamu", icon: "💌" },
