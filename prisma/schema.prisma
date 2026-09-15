@@ -51,6 +51,7 @@ model Transaction {
   acara      String               @default("wedding") // wedding | sanjit
   kategori   String // dari daftar KATEGORI_VENDOR, atau "Lainnya"
   namaVendor String // nama vendor/penerima, diketik bebas
+  qty        Int                  @default(1) // jumlah orang/unit; totalHarga tetap total keseluruhan
   totalHarga Int                  @default(0)
   deadline   DateTime? // opsional, target tanggal lunas
   catatan    String?

@@ -16,6 +16,13 @@ function parseRupiah(raw: FormDataEntryValue | null): number {
   return digits ? parseInt(digits, 10) : 0;
 }
 
+/** Qty kosong/tidak valid dianggap 1. Mengembalikan undefined kalau field tidak dikirim, supaya qty lama tidak ter-reset. */
+function parseQty(raw: FormDataEntryValue | null): number | undefined {
+  if (raw === null) return undefined;
+  const n = parseInt(String(raw).replace(/[^\d]/g, ""), 10);
+  return n > 0 ? n : 1;
+}
+
 function str(raw: FormDataEntryValue | null): string | null {
   const v = raw ? String(raw).trim() : "";
   return v.length ? v : null;
@@ -44,6 +51,7 @@ export async function createTransaction(formData: FormData) {
       acara: parseAcara(formData.get("acara")),
       kategori,
       namaVendor,
+      qty: parseQty(formData.get("qty")),
       totalHarga,
       deadline,
       catatan,
@@ -83,6 +91,7 @@ export async function updateTransaction(formData: FormData) {
       acara: parseAcara(formData.get("acara")),
       kategori,
       namaVendor,
+      qty: parseQty(formData.get("qty")),
       totalHarga,
       deadline,
       catatan,

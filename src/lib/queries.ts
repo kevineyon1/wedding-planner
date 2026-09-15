@@ -71,6 +71,7 @@ export type TransactionRow = {
   acara: string;
   kategori: string;
   namaVendor: string;
+  qty: number;
   totalHarga: number;
   totalDibayar: number;
   sisaHutang: number;
@@ -102,6 +103,7 @@ export async function getTransactions(): Promise<TransactionRow[]> {
       acara: t.acara,
       kategori: t.kategori,
       namaVendor: t.namaVendor,
+      qty: t.qty,
       totalHarga: t.totalHarga,
       totalDibayar,
       sisaHutang: Math.max(0, t.totalHarga - totalDibayar),

@@ -99,10 +99,48 @@ export const CHECKLIST_SANJIT: ChecklistGrup[] = [
   { grup: "Lainnya", items: ["WCC", "Seserahan Pria", "Seserahan Wanita"] },
 ];
 
-/** Checklist per acara. Wedding masih kosong — daftarnya menyusul dari user. */
+/** Checklist biaya Wedding. Item utk lebih dari 1 orang (keluarga, orang tua) dicatat sekali + qty. */
+export const CHECKLIST_WEDDING: ChecklistGrup[] = [
+  { grup: "Vendor Utama", items: ["Venue", "WO", "Dekorasi", "MC", "Musik"] },
+  {
+    grup: "Busana",
+    items: [
+      "Wedding Gown",
+      "Groom Suit",
+      "Gown Orang Tua",
+      "Jas Orang Tua",
+      "Gown Keluarga",
+      "Jas Keluarga",
+    ],
+  },
+  {
+    grup: "Makeup",
+    items: [
+      "Makeup Bride",
+      "Makeup Groom",
+      "Makeup Keluarga",
+      "Makeup Saudara (Wanita)",
+      "Makeup Saudara (Pria)",
+    ],
+  },
+  { grup: "Dokumentasi", items: ["Photographer", "Videographer"] },
+  {
+    grup: "Lainnya",
+    items: [
+      "WCC",
+      "Cincin Wedding",
+      "Wedding Cake",
+      "Souvenir",
+      "Undangan Digital",
+      "Undangan Fisik",
+      "Doorprize",
+    ],
+  },
+];
+
 export const CHECKLIST_ACARA: Record<string, ChecklistGrup[]> = {
   sanjit: CHECKLIST_SANJIT,
-  wedding: [],
+  wedding: CHECKLIST_WEDDING,
 };
 
 /** Semua nama item checklist sebuah acara (flat), utk hitung progres/pencocokan. */

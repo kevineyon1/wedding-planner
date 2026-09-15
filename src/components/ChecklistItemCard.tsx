@@ -46,6 +46,7 @@ export function ChecklistItemCard({
   transaction: TransactionRow | null;
 }) {
   const [namaVendor, setNamaVendor] = useState(t?.namaVendor ?? "");
+  const [qty, setQty] = useState(String(t?.qty ?? 1));
   const [totalHarga, setTotalHarga] = useState(
     t?.totalHarga ? t.totalHarga.toLocaleString("id-ID") : ""
   );
@@ -58,6 +59,7 @@ export function ChecklistItemCard({
   const dibayar = t?.totalDibayar ?? 0;
   const hargaNum = onlyDigits(totalHarga);
   const bayarNum = onlyDigits(bayar);
+  const qtyNum = Math.max(1, onlyDigits(qty));
   // Sisa langsung menghitung mundur nominal "Bayar" yg baru diketik, sebelum disimpan
   const sisa = Math.max(0, hargaNum - dibayar - bayarNum);
   const lunas = hargaNum > 0 && dibayar >= hargaNum;
@@ -74,6 +76,7 @@ export function ChecklistItemCard({
       fd.set("acara", acara);
       fd.set("kategori", item);
       fd.set("namaVendor", namaVendor);
+      fd.set("qty", String(qtyNum));
       fd.set("totalHarga", totalHarga);
 
       if (t) {
@@ -137,6 +140,7 @@ export function ChecklistItemCard({
       fd.set("id", String(t.id));
       await deleteTransaction(fd);
       setNamaVendor("");
+      setQty("1");
       setTotalHarga("");
       setBayar("");
       setShowDetail(false);
@@ -167,9 +171,9 @@ export function ChecklistItemCard({
         )}
       </div>
 
-      {/* Baris 2: input — grid seragam (5 kolom tetap) supaya rata di semua baris.
+      {/* Baris 2: input — grid seragam (kolom tetap) supaya rata di semua baris.
           Kolom Sisa dilebihkan lebarnya krn nominalnya bisa panjang (mis. "Rp 11.700.000"). */}
-      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_115px_115px_150px_auto] gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-[minmax(0,1fr)_64px_115px_115px_150px_auto] gap-2">
         <input
           value={namaVendor}
           onChange={(e) => setNamaVendor(e.target.value)}
@@ -177,6 +181,20 @@ export function ChecklistItemCard({
           placeholder="Nama vendor"
           aria-label={`Nama vendor ${item}`}
         />
+        <div className="relative">
+          <input
+            value={qty}
+            onChange={(e) => setQty(e.target.value.replace(/[^\d]/g, ""))}
+            onBlur={() => setQty(String(qtyNum))}
+            inputMode="numeric"
+            className="input py-1.5 pl-7 text-sm w-full"
+            aria-label={`Qty ${item}`}
+            title="Jumlah orang/unit"
+          />
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted pointer-events-none">
+            ×
+          </span>
+        </div>
         <input
           value={totalHarga}
           onChange={(e) => setTotalHarga(formatThousands(e.target.value))}
@@ -218,6 +236,12 @@ export function ChecklistItemCard({
           {isPending ? "..." : "Simpan"}
         </button>
       </div>
+
+      {qtyNum > 1 && hargaNum > 0 && (
+        <p className="text-xs text-muted mt-1.5">
+          {qtyNum} orang · ± {formatRupiah(Math.round(hargaNum / qtyNum))} / orang
+        </p>
+      )}
 
       {/* Baris 3: dibayar (kumulatif) + toggle riwayat */}
       {!belumDiisi && (
