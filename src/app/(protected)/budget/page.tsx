@@ -11,9 +11,12 @@ export default async function TabunganPage() {
     getSetting(),
   ]);
 
-  // Pembayaran yg sudah terjadi tidak memakai tabungan ini, jadi tabungan dibandingkan dgn sisa hutang saja.
+  // Hanya pembayaran bersumber "tabungan" yg memotong saldo; yg dari luar cuma mengurangi hutang.
+  const dipakai = finance.dibayarDariTabungan;
+  const saldo = tabungan.total - dipakai;
+  const dibayarLuar = finance.totalDibayar - dipakai;
   const sisaHutang = finance.totalHutang;
-  const selisih = tabungan.total - sisaHutang;
+  const selisih = saldo - sisaHutang;
   const kurang = selisih < 0;
 
   const totalAnggaran = setting.totalAnggaran;
@@ -35,21 +38,33 @@ export default async function TabunganPage() {
 
       <div className="card p-5 mb-3 bg-primary-soft/40 border-primary/20">
         <p className="text-xs text-muted">Saldo Tabungan</p>
-        <p className="text-3xl font-bold mt-1 text-primary">
-          {formatRupiah(tabungan.total)}
+        <p
+          className={`text-3xl font-bold mt-1 ${saldo < 0 ? "text-red-600" : "text-primary"}`}
+        >
+          {formatRupiah(saldo)}
         </p>
-        <p className="text-xs text-muted mt-0.5">total yang sudah ditabung</p>
+        <p className="text-xs text-muted mt-1">
+          setoran {formatRupiah(tabungan.total)} − dipakai bayar vendor{" "}
+          {formatRupiah(dipakai)}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="card p-4">
+          <p className="text-xs text-muted">🏦 Dibayar pakai Tabungan</p>
+          <p className="text-lg font-semibold mt-1 text-sky-700">
+            {formatRupiah(dipakai)}
+          </p>
+          <p className="text-xs text-muted mt-0.5">
+            💵 luar tabungan {formatRupiah(dibayarLuar)}
+          </p>
+        </div>
         <div className="card p-4">
           <p className="text-xs text-muted">Sisa Hutang (dari Finance)</p>
           <p className="text-lg font-semibold mt-1 text-amber-600">
             {formatRupiah(sisaHutang)}
           </p>
-          <p className="text-xs text-muted mt-0.5">
-            belum dibayar · sudah dibayar {formatRupiah(finance.totalDibayar)}
-          </p>
+          <p className="text-xs text-muted mt-0.5">belum dibayar</p>
         </div>
         <div
           className={`card p-4 ${

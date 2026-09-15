@@ -17,7 +17,8 @@ export default async function DashboardPage() {
     getFinanceSummary(),
   ]);
 
-  const selisih = tabungan.total - finance.totalHutang;
+  const saldo = tabungan.total - finance.dibayarDariTabungan;
+  const selisih = saldo - finance.totalHutang;
 
   const sisaHari = hariMenuju(setting.tanggalHariH);
   const namaPasangan =
@@ -65,8 +66,10 @@ export default async function DashboardPage() {
             <h2 className="font-semibold">💰 Tabungan</h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
-          <p className="text-2xl font-semibold text-primary">
-            {formatRupiah(tabungan.total)}
+          <p
+            className={`text-2xl font-semibold ${saldo < 0 ? "text-red-600" : "text-primary"}`}
+          >
+            {formatRupiah(saldo)}
           </p>
           <p
             className={`text-xs mt-1 ${

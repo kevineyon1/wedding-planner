@@ -10,6 +10,7 @@ import {
 } from "@/app/actions/transaction";
 import { formatRupiah, formatTanggal } from "@/lib/format";
 import type { TransactionRow } from "@/lib/queries";
+import { SumberBadge, SumberSelect } from "@/components/SumberBadge";
 
 const JENIS_LABEL: Record<string, string> = {
   dp: "DP",
@@ -51,9 +52,11 @@ export function ChecklistItemCard({
     t?.totalHarga ? t.totalHarga.toLocaleString("id-ID") : ""
   );
   const [bayar, setBayar] = useState("");
+  const [sumber, setSumber] = useState("tabungan");
   const [showDetail, setShowDetail] = useState(false);
   const [bayarManual, setBayarManual] = useState("");
   const [bayarManualJenis, setBayarManualJenis] = useState("dp");
+  const [bayarManualSumber, setBayarManualSumber] = useState("tabungan");
   const [isPending, startTransition] = useTransition();
 
   const dibayar = t?.totalDibayar ?? 0;
@@ -95,11 +98,15 @@ export function ChecklistItemCard({
           pfd.set("transactionId", String(t.id));
           pfd.set("jumlah", String(bayarNum));
           pfd.set("jenis", inferJenis(dibayar, bayarNum, hargaNum));
+          pfd.set("sumber", sumber);
           await addTransactionPayment(pfd);
         }
       } else {
         // Transaksi baru: kalau "Bayar" diisi, langsung dicatat sbg pembayaran pertama (DP)
-        if (bayarNum > 0) fd.set("dp", String(bayarNum));
+        if (bayarNum > 0) {
+          fd.set("dp", String(bayarNum));
+          fd.set("sumber", sumber);
+        }
         await createTransaction(fd);
       }
 
@@ -118,6 +125,7 @@ export function ChecklistItemCard({
       fd.set("transactionId", String(t.id));
       fd.set("jumlah", bayarManual);
       fd.set("jenis", bayarManualJenis);
+      fd.set("sumber", bayarManualSumber);
       await addTransactionPayment(fd);
       setBayarManual("");
     });
@@ -237,6 +245,31 @@ export function ChecklistItemCard({
         </button>
       </div>
 
+      {bayarNum > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
+          <span className="text-muted">
+            Bayar {formatRupiah(bayarNum)} pakai
+          </span>
+          {(["tabungan", "luar"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSumber(s)}
+              className={`rounded-full border px-2.5 py-1 transition-colors ${
+                sumber === s
+                  ? s === "tabungan"
+                    ? "border-sky-300 bg-sky-100 text-sky-700 font-medium"
+                    : "border-gray-300 bg-gray-100 text-gray-700 font-medium"
+                  : "border-border text-muted hover:bg-primary-soft/40"
+              }`}
+            >
+              {s === "tabungan" ? "🏦 Tabungan" : "💵 Luar tabungan"}
+            </button>
+          ))}
+          <span className="text-muted">→ klik Simpan</span>
+        </div>
+      )}
+
       {qtyNum > 1 && hargaNum > 0 && (
         <p className="text-xs text-muted mt-1.5">
           {qtyNum} orang · ± {formatRupiah(Math.round(hargaNum / qtyNum))} / orang
@@ -274,6 +307,7 @@ export function ChecklistItemCard({
                 <span className="badge bg-primary-soft text-primary mr-1.5">
                   {JENIS_LABEL[p.jenis] ?? p.jenis}
                 </span>
+                <SumberBadge paymentId={p.id} sumber={p.sumber} />
                 {formatRupiah(p.jumlah)}
                 {p.tanggalBayar && (
                   <span className="text-muted">
@@ -302,7 +336,7 @@ export function ChecklistItemCard({
             <summary className="text-muted hover:text-primary cursor-pointer list-none">
               + Catat manual (pilih jenis)
             </summary>
-            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_130px_auto] gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_110px_150px_auto] gap-2 mt-2">
               <input
                 value={bayarManual}
                 onChange={(e) => setBayarManual(formatThousands(e.target.value))}
@@ -322,6 +356,11 @@ export function ChecklistItemCard({
                 <option value="pelunasan">Pelunasan</option>
                 <option value="lainnya">Lainnya</option>
               </select>
+              <SumberSelect
+                value={bayarManualSumber}
+                onChange={setBayarManualSumber}
+                label={`Sumber dana pembayaran manual ${item}`}
+              />
               <button
                 type="button"
                 onClick={handleAddPayment}

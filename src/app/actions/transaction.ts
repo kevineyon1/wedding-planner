@@ -3,7 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/require-auth";
-import { ACARA_TRANSAKSI } from "@/lib/constants";
+import { ACARA_TRANSAKSI, SUMBER_DANA } from "@/lib/constants";
+
+function parseSumber(raw: FormDataEntryValue | null): string {
+  const v = String(raw ?? "");
+  return (SUMBER_DANA as readonly string[]).includes(v) ? v : "tabungan";
+}
 
 function parseAcara(raw: FormDataEntryValue | null): string {
   const v = String(raw ?? "");
@@ -61,6 +66,7 @@ export async function createTransaction(formData: FormData) {
               create: {
                 jumlah: dp,
                 jenis: "dp",
+                sumber: parseSumber(formData.get("sumber")),
                 tanggalBayar: tanggalDp ?? new Date(),
               },
             },
@@ -123,12 +129,28 @@ export async function addTransactionPayment(formData: FormData) {
       transactionId,
       jumlah,
       jenis: str(formData.get("jenis")) ?? "cicilan",
+      sumber: parseSumber(formData.get("sumber")),
       tanggalBayar: toDate(formData.get("tanggalBayar")) ?? new Date(),
       catatan: str(formData.get("catatan")),
     },
   });
 
   revalidatePath("/finance");
+  revalidatePath("/budget");
+  revalidatePath("/");
+}
+
+/** Ganti sumber dana pembayaran yang sudah tercatat (koreksi salah pilih). */
+export async function updatePaymentSumber(formData: FormData) {
+  await requireAuth();
+  const id = Number(formData.get("id"));
+  if (!id) return;
+  await prisma.transactionPayment.update({
+    where: { id },
+    data: { sumber: parseSumber(formData.get("sumber")) },
+  });
+  revalidatePath("/finance");
+  revalidatePath("/budget");
   revalidatePath("/");
 }
 

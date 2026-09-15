@@ -10,6 +10,7 @@ import { formatRupiah, formatTanggal } from "@/lib/format";
 import type { TransactionRow } from "@/lib/queries";
 import { TransactionEditDialog } from "@/components/TransactionEditDialog";
 import { LABEL_ACARA } from "@/lib/constants";
+import { SumberBadge, SumberSelect } from "@/components/SumberBadge";
 
 const JENIS_LABEL: Record<string, string> = {
   dp: "DP",
@@ -169,6 +170,7 @@ function TransactionDetail({ transaction: t }: { transaction: TransactionRow }) 
                   <span className="badge bg-primary-soft text-primary mr-1.5">
                     {JENIS_LABEL[p.jenis] ?? p.jenis}
                   </span>
+                  <SumberBadge paymentId={p.id} sumber={p.sumber} />
                   {formatRupiah(p.jumlah)}
                   {p.tanggalBayar && (
                     <span className="text-muted"> · {formatTanggal(p.tanggalBayar)}</span>
@@ -195,7 +197,7 @@ function TransactionDetail({ transaction: t }: { transaction: TransactionRow }) 
         <form
           ref={formRef}
           action={handleAddPayment}
-          className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-2 items-end"
+          className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-end"
         >
           <input type="hidden" name="transactionId" value={t.id} />
           <div>
@@ -216,6 +218,10 @@ function TransactionDetail({ transaction: t }: { transaction: TransactionRow }) 
               <option value="dp">DP</option>
               <option value="lainnya">Lainnya</option>
             </select>
+          </div>
+          <div>
+            <label className="label text-[11px]">Sumber dana</label>
+            <SumberSelect name="sumber" label="Sumber dana" />
           </div>
           <div>
             <label className="label text-[11px]">Tanggal</label>

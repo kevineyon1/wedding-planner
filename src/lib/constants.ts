@@ -57,6 +57,13 @@ export const LABEL_ACARA: Record<string, string> = {
   sanjit: "Sanjit",
 };
 
+/** Sumber dana sebuah pembayaran. */
+export const SUMBER_DANA = ["tabungan", "luar"] as const;
+export const LABEL_SUMBER: Record<string, string> = {
+  tabungan: "Tabungan",
+  luar: "Luar tabungan",
+};
+
 /** Satu grup item checklist biaya dalam sebuah acara. */
 export type ChecklistGrup = { grup: string; items: string[] };
 

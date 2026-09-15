@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { createTransaction } from "@/app/actions/transaction";
 import { KATEGORI_VENDOR, ACARA_TRANSAKSI, LABEL_ACARA } from "@/lib/constants";
+import { SumberSelect } from "@/components/SumberBadge";
 
 export function TransactionFormDialog() {
   const [open, setOpen] = useState(false);
@@ -96,7 +97,7 @@ export function TransactionFormDialog() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="label">DP (Rp)</label>
                   <input
@@ -109,6 +110,10 @@ export function TransactionFormDialog() {
                 <div>
                   <label className="label">Tanggal DP Dibayar</label>
                   <input type="date" name="tanggalDp" className="input" />
+                </div>
+                <div>
+                  <label className="label">DP dibayar pakai</label>
+                  <SumberSelect name="sumber" label="Sumber dana DP" />
                 </div>
               </div>
 

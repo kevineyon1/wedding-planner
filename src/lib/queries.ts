@@ -82,6 +82,7 @@ export type TransactionRow = {
     id: number;
     jumlah: number;
     jenis: string;
+    sumber: string;
     tanggalBayar: Date | null;
     catatan: string | null;
   }[];
@@ -114,6 +115,7 @@ export async function getTransactions(): Promise<TransactionRow[]> {
         id: p.id,
         jumlah: p.jumlah,
         jenis: p.jenis,
+        sumber: p.sumber,
         tanggalBayar: p.tanggalBayar,
         catatan: p.catatan,
       })),
@@ -150,6 +152,11 @@ export async function getFinanceSummary() {
   const totalTagihan = transactions.reduce((s, t) => s + t.totalHarga, 0);
   const totalDibayar = transactions.reduce((s, t) => s + t.totalDibayar, 0);
   const totalHutang = transactions.reduce((s, t) => s + t.sisaHutang, 0);
+  const dibayarDariTabungan = transactions.reduce(
+    (s, t) =>
+      s + t.payments.filter((p) => p.sumber === "tabungan").reduce((a, p) => a + p.jumlah, 0),
+    0
+  );
 
   const now = new Date();
   const jumlahLewatDeadline = transactions.filter(
@@ -174,6 +181,7 @@ export async function getFinanceSummary() {
     totalTagihan,
     totalDibayar,
     totalHutang,
+    dibayarDariTabungan,
     jumlahTransaksi: transactions.length,
     jumlahLewatDeadline,
     perAcara,
