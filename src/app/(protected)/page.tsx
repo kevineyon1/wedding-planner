@@ -65,18 +65,16 @@ export default async function DashboardPage() {
             <h2 className="font-semibold">💰 Tabungan</h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
-          <p className="text-2xl font-semibold text-primary">
-            {formatRupiah(tabungan.total)}
-          </p>
-          <p className="text-xs text-muted">
-            beban (sudah dibayar): {formatRupiah(finance.totalDibayar)}
-          </p>
           <p
-            className={`text-xs mt-2 font-medium ${
-              saldo < 0 ? "text-red-600" : "text-emerald-600"
+            className={`text-2xl font-semibold ${
+              saldo < 0 ? "text-red-600" : "text-primary"
             }`}
           >
-            Saldo: {formatRupiah(saldo)}
+            {formatRupiah(saldo)}
+          </p>
+          <p className="text-xs text-muted mt-1">
+            dari total setoran {formatRupiah(tabungan.total)} − beban{" "}
+            {formatRupiah(finance.totalDibayar)}
           </p>
         </Link>
 

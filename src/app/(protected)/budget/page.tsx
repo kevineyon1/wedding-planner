@@ -32,29 +32,36 @@ export default async function TabunganPage() {
         </p>
       </header>
 
-      {/* Kartu ringkasan */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      {/* Kartu utama: Saldo = uang yg benar-benar masih ada, sudah dikurangi beban */}
+      <div className="card p-5 mb-3 bg-primary-soft/40 border-primary/20">
+        <p className="text-xs text-muted">
+          Saldo Tabungan{" "}
+          <span className="text-muted/70">(sudah dikurangi beban yang dibayar)</span>
+        </p>
+        <p
+          className={`text-3xl font-bold mt-1 ${
+            defisit ? "text-red-600" : "text-primary"
+          }`}
+        >
+          {formatRupiah(saldo)}
+        </p>
+      </div>
+
+      {/* Rincian pendukung: dari mana saldo itu berasal */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         <div className="card p-4">
-          <p className="text-xs text-muted">Total Tabungan (Aset)</p>
-          <p className="text-xl font-semibold mt-1 text-primary">
+          <p className="text-xs text-muted">Total Setoran Tabungan</p>
+          <p className="text-lg font-semibold mt-1">
             {formatRupiah(tabungan.total)}
           </p>
+          <p className="text-xs text-muted mt-0.5">total yang pernah ditabung</p>
         </div>
         <div className="card p-4">
           <p className="text-xs text-muted">Total Beban (dari Finance)</p>
-          <p className="text-xl font-semibold mt-1 text-amber-600">
+          <p className="text-lg font-semibold mt-1 text-amber-600">
             {formatRupiah(beban)}
           </p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs text-muted">Saldo</p>
-          <p
-            className={`text-xl font-semibold mt-1 ${
-              defisit ? "text-red-600" : "text-emerald-600"
-            }`}
-          >
-            {formatRupiah(saldo)}
-          </p>
+          <p className="text-xs text-muted mt-0.5">total yang sudah dibayar</p>
         </div>
       </div>
 
