@@ -7,6 +7,7 @@ import {
   getFinanceSummary,
 } from "@/lib/queries";
 import { formatRupiah, formatTanggal, hariMenuju } from "@/lib/format";
+import { Amount, EyeToggle } from "@/components/HideAmount";
 
 export default async function DashboardPage() {
   const [setting, tabungan, todo, guest, finance] = await Promise.all([
@@ -63,22 +64,26 @@ export default async function DashboardPage() {
         {/* Tabungan */}
         <Link href="/budget" className="card p-5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold">💰 Tabungan</h2>
+            <h2 className="font-semibold flex items-center gap-1">
+              💰 Tabungan <EyeToggle />
+            </h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
           <p
             className={`text-2xl font-semibold ${saldo < 0 ? "text-red-600" : "text-primary"}`}
           >
-            {formatRupiah(saldo)}
+            <Amount>{formatRupiah(saldo)}</Amount>
           </p>
           <p
             className={`text-xs mt-1 ${
               selisih < 0 ? "text-red-600" : "text-emerald-600"
             }`}
           >
-            {selisih < 0
-              ? `Kurang ${formatRupiah(-selisih)} untuk lunasi hutang`
-              : `Cukup lunasi hutang, lebih ${formatRupiah(selisih)}`}
+            <Amount>
+              {selisih < 0
+                ? `Kurang ${formatRupiah(-selisih)} untuk lunasi hutang`
+                : `Cukup lunasi hutang, lebih ${formatRupiah(selisih)}`}
+            </Amount>
           </p>
         </Link>
 
@@ -105,15 +110,17 @@ export default async function DashboardPage() {
         {/* Finance */}
         <Link href="/finance" className="card p-5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold">🧾 Finance</h2>
+            <h2 className="font-semibold flex items-center gap-1">
+              🧾 Finance <EyeToggle />
+            </h2>
             <span className="text-xs text-muted">lihat →</span>
           </div>
           <p className="text-sm text-muted">Total Hutang</p>
           <p className="text-xl font-semibold text-amber-600">
-            {formatRupiah(finance.totalHutang)}
+            <Amount>{formatRupiah(finance.totalHutang)}</Amount>
           </p>
           <p className="text-xs text-emerald-600 mt-1">
-            Sudah dibayar: {formatRupiah(finance.totalDibayar)}
+            <Amount>{`Sudah dibayar: ${formatRupiah(finance.totalDibayar)}`}</Amount>
           </p>
           {finance.jumlahLewatDeadline > 0 && (
             <p className="text-xs text-red-600 mt-1">
