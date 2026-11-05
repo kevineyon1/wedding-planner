@@ -26,7 +26,7 @@ export default async function PengaturanPage() {
               name="namaPengantin1"
               defaultValue={s.namaPengantin1}
               className="input"
-              placeholder="Kevin"
+              placeholder="Nama pengantin pria"
             />
           </div>
           <div>

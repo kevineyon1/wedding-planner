@@ -9,10 +9,15 @@ Halaman login adalah "pintu": satu foto besar golden-hour di satu sisi, satu kol
 form tenang di sisi lain. Bagian dalam aplikasi tetap padat dan fungsional.
 
 ## 1b. Signature element (satu, wajib)
-**Pintu yang menghitung mundur** — angka sisa hari menuju hari-H ditulis sangat besar
-dengan huruf display di atas foto, sebelum siapa pun login. Layer: data + tipografi.
-Angkanya milik pasangan ini (dari Pengaturan), bukan efek dari katalog.
-Berlanjut di: kartu countdown Dashboard memakai angka yang sama.
+**Tagline yang diukir besar** — baris milik merek sendiri, "Your story, beautifully
+planned", diambil dari logo dan dipasang sebesar judul di atas foto golden-hour,
+dengan garis rambut di bawahnya. Layer: tipografi + materialitas.
+Berlanjut di: logo WP penuh di halaman login dan monogram di sidebar.
+
+## 1c. Aturan white-label (produk ini bisa dijual)
+Halaman publik (login, metadata, favicon) tidak boleh memuat nama pasangan, tanggal
+hari-H, angka keuangan, atau nama pembuat. Semua data pemilik akun hanya muncul
+setelah login. Countdown hari-H hidup di Dashboard, bukan di pintu masuk.
 
 ## 2. Palette
 - **Linen** `#faf7f5` — ground halaman
