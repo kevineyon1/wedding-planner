@@ -26,7 +26,7 @@ export async function createGuest(formData: FormData) {
     },
   });
   revalidatePath("/tamu");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function updateGuest(formData: FormData) {
@@ -49,7 +49,7 @@ export async function updateGuest(formData: FormData) {
     },
   });
   revalidatePath("/tamu");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function setGuestStatus(formData: FormData) {
@@ -67,5 +67,5 @@ export async function deleteGuest(formData: FormData) {
   if (!id) return;
   await prisma.guest.delete({ where: { id } });
   revalidatePath("/tamu");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

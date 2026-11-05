@@ -76,7 +76,7 @@ export async function createTransaction(formData: FormData) {
   });
 
   revalidatePath("/finance");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function updateTransaction(formData: FormData) {
@@ -105,7 +105,7 @@ export async function updateTransaction(formData: FormData) {
   });
 
   revalidatePath("/finance");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteTransaction(formData: FormData) {
@@ -114,7 +114,7 @@ export async function deleteTransaction(formData: FormData) {
   if (!id) return;
   await prisma.transaction.delete({ where: { id } });
   revalidatePath("/finance");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 /** Catat pembayaran baru (cicilan/pelunasan/dll) untuk transaksi yang sudah ada. */
@@ -137,7 +137,7 @@ export async function addTransactionPayment(formData: FormData) {
 
   revalidatePath("/finance");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 /** Ganti sumber dana pembayaran yang sudah tercatat (koreksi salah pilih). */
@@ -151,7 +151,7 @@ export async function updatePaymentSumber(formData: FormData) {
   });
   revalidatePath("/finance");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteTransactionPayment(formData: FormData) {
@@ -160,5 +160,5 @@ export async function deleteTransactionPayment(formData: FormData) {
   if (!id) return;
   await prisma.transactionPayment.delete({ where: { id } });
   revalidatePath("/finance");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

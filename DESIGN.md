@@ -15,9 +15,11 @@ dengan garis rambut di bawahnya. Layer: tipografi + materialitas.
 Berlanjut di: logo WP penuh di halaman login dan monogram di sidebar.
 
 ## 1c. Aturan white-label (produk ini bisa dijual)
-Halaman publik (login, metadata, favicon) tidak boleh memuat nama pasangan, tanggal
-hari-H, angka keuangan, atau nama pembuat. Semua data pemilik akun hanya muncul
-setelah login. Countdown hari-H hidup di Dashboard, bukan di pintu masuk.
+Halaman publik (landing `/`, login, metadata, favicon) tidak boleh memuat nama
+pasangan, tanggal hari-H, angka keuangan, nama vendor asli, atau nama pembuat.
+Semua data pemilik akun hanya muncul setelah login; Dashboard pindah ke
+`/dashboard` dan `/` otomatis mengarah ke sana kalau sudah login.
+Miniatur UI di landing memakai nama dan angka fiktif.
 
 ## 2. Palette
 - **Linen** `#faf7f5` — ground halaman

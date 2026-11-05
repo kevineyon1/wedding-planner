@@ -24,7 +24,7 @@ export async function updateSetting(formData: FormData) {
     create: { id: 1, namaPengantin1, namaPengantin2, totalAnggaran, tanggalHariH },
   });
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/budget");
   revalidatePath("/pengaturan");
 }

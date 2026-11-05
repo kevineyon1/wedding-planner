@@ -27,7 +27,7 @@ export async function login(formData: FormData) {
     path: "/",
   });
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function logout() {

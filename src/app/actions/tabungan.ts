@@ -31,7 +31,7 @@ export async function addTabungan(formData: FormData) {
   });
 
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteTabungan(formData: FormData) {
@@ -40,5 +40,5 @@ export async function deleteTabungan(formData: FormData) {
   if (!id) return;
   await prisma.tabungan.delete({ where: { id } });
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

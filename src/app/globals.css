@@ -74,6 +74,15 @@ body {
     animation-delay: var(--d, 0ms);
   }
 
+  /* Scroll-reveal native (0 JS). Browser tanpa dukungan: konten tetap terlihat. */
+  @supports (animation-timeline: view()) {
+    .wp-inview {
+      animation: wp-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 60%;
+    }
+  }
+
   @keyframes wp-drift {
     from {
       transform: scale(1.02);

@@ -78,7 +78,7 @@ export async function createVendor(formData: FormData) {
 
   revalidatePath("/vendor");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function updateVendor(formData: FormData) {
@@ -134,7 +134,7 @@ export async function updateVendor(formData: FormData) {
 
   revalidatePath("/vendor");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 /** Ubah status cepat (mis. dari dropdown di list) */
@@ -146,7 +146,7 @@ export async function setVendorStatus(formData: FormData) {
   await prisma.vendor.update({ where: { id }, data: { status } });
   revalidatePath("/vendor");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteVendor(formData: FormData) {
@@ -163,5 +163,5 @@ export async function deleteVendor(formData: FormData) {
   await prisma.vendor.delete({ where: { id } });
   revalidatePath("/vendor");
   revalidatePath("/budget");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

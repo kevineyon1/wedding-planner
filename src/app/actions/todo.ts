@@ -24,7 +24,7 @@ export async function createTodo(formData: FormData) {
     },
   });
   revalidatePath("/todo");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function setTodoStatus(formData: FormData) {
@@ -34,7 +34,7 @@ export async function setTodoStatus(formData: FormData) {
   if (!id || !status) return;
   await prisma.todo.update({ where: { id }, data: { status } });
   revalidatePath("/todo");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteTodo(formData: FormData) {
@@ -43,5 +43,5 @@ export async function deleteTodo(formData: FormData) {
   if (!id) return;
   await prisma.todo.delete({ where: { id } });
   revalidatePath("/todo");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

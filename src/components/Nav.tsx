@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 
 const links = [
-  { href: "/", label: "Dashboard", icon: "🏠" },
+  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/vendor", label: "Survey Vendor", icon: "🏷️" },
   { href: "/budget", label: "Tabungan", icon: "💰" },
   { href: "/finance", label: "Finance", icon: "🧾" },
@@ -20,7 +20,7 @@ export function Nav() {
 
   return (
     <nav className="md:w-60 md:min-h-screen bg-card border-b md:border-b-0 md:border-r border-border px-3 py-4 md:py-6 shrink-0">
-      <Link href="/" className="flex items-center gap-2.5 px-2 mb-4 md:mb-6">
+      <Link href="/dashboard" className="flex items-center gap-2.5 px-2 mb-4 md:mb-6">
         <Image src="/logo-mark.png" alt="" width={44} height={44} priority />
         <div>
           <p className="text-base font-semibold text-primary leading-tight tracking-wide">
@@ -31,8 +31,7 @@ export function Nav() {
       </Link>
       <ul className="flex md:flex-col gap-1 overflow-x-auto">
         {links.map((l) => {
-          const active =
-            l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+          const active = pathname.startsWith(l.href);
           return (
             <li key={l.href} className="shrink-0">
               <Link
