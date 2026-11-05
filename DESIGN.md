@@ -53,6 +53,10 @@ kustom, tiga kartu identik, nama palsu, "Elevate/Seamless", chevron memantul,
 "Scroll to explore".
 
 ## 8. Asset
-`src/assets/login-bouquet.jpg` — Unsplash (`photo-1519741497674-611481863552`),
-Unsplash License (gratis, boleh dipakai komersial, atribusi tidak wajib).
-Di-host sendiri agar tidak bergantung pada CDN pihak ketiga.
+- `src/assets/login-bouquet.jpg` — Unsplash (`photo-1519741497674-611481863552`),
+  Unsplash License (gratis, boleh dipakai komersial, atribusi tidak wajib).
+- `src/assets/fonts/CormorantGaramond-latin.woff2` — Google Fonts, SIL Open Font
+  License 1.1 (gratis, boleh dipakai komersial). Variable 300–700, subset latin.
+
+Keduanya di-host sendiri, bukan diambil dari CDN pihak ketiga: build di droplet
+pernah gagal karena unduhan font saat build.

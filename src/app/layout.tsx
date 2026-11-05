@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Cormorant_Garamond } from "next/font/google";
+import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["300", "400"],
+
+// Di-host sendiri: build di droplet pernah gagal saat mengunduh font ini dari Google.
+const cormorant = localFont({
+  src: "../assets/fonts/CormorantGaramond-latin.woff2",
+  weight: "300 700",
+  display: "swap",
   variable: "--font-cormorant",
 });
 
